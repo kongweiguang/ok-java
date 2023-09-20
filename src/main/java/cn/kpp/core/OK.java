@@ -10,6 +10,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.BufferedSink;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ public final class OK {
 
     private static Request.Builder _builder;
     private static RequestBody requestBody;
+    private static String contentType;
     private boolean async = false;
 
     private Consumer<ResponseBody> success;
@@ -98,7 +100,7 @@ public final class OK {
     }
 
     public OK post() {
-        _builder.post(requestBody);
+        _builder.post(new Body());
         return this;
     }
 
@@ -107,10 +109,33 @@ public final class OK {
         return this;
     }
 
-
-    public OK method(String method) {
+    public OK jsonBody(String json) {
+        requestBody = RequestBody.create(json, MediaType.parse("application/json"));
         return this;
     }
 
+
+    public OK success(Consumer<ResponseBody> success) {
+        this.success = success;
+        return this;
+    }
+
+
+    public OK fail(Consumer<IOException> fail) {
+        this.fail = fail;
+        return this;
+    }
+
+
+    private static final class Body extends RequestBody {
+        @Override
+        public MediaType contentType() {
+            return MediaType.parse("");
+        }
+
+        @Override
+        public void writeTo(final BufferedSink bs) throws IOException {
+        }
+    }
 
 }
