@@ -10,10 +10,17 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
 import okio.BufferedSink;
+import okio.Okio;
+import okio.Source;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -22,7 +29,7 @@ import java.util.function.Consumer;
  */
 public final class OK {
 
-    private static final OkHttpClient CLIENT = new OkHttpClient.Builder()
+    private static final OkHttpClient defaultC = new OkHttpClient.Builder()
             .connectionPool(new ConnectionPool(10000, 15, TimeUnit.MINUTES))
             .connectTimeout(15, TimeUnit.MINUTES)
             .writeTimeout(15, TimeUnit.MINUTES)
@@ -30,22 +37,31 @@ public final class OK {
             .build();
 
 
-    private static Request.Builder _builder;
-    private static RequestBody requestBody;
-    private static String contentType;
+    private OkHttpClient C;
+    private Request.Builder _builder;
+    private RequestBody requestBody;
+    private String contentType;
+    private Charset _charset;
+
+    private Map<String, Object> param;
+
     private boolean async = false;
 
     private Consumer<ResponseBody> success;
     private Consumer<IOException> fail;
 
 
-    private OK() {
+    private OK(OkHttpClient c) {
+        if (Objects.isNull(c)) {
+            this.C = defaultC;
+        } else {
+            this.C = c;
+        }
         _builder = new Request.Builder();
-
     }
 
     public static OK of() {
-        return new OK();
+        return new OK(null);
     }
 
     /**
@@ -53,9 +69,9 @@ public final class OK {
      *
      * @return r
      */
-    public String send() throws Exception {
+    public Res ok() {
         if (async) {
-            CLIENT.newCall(_builder.build()).enqueue(new Callback() {
+            this.C.newCall(_builder.build()).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
                     fail.accept(e);
@@ -69,26 +85,61 @@ public final class OK {
             });
             return null;
         } else {
-            try (Response execute = CLIENT.newCall(_builder.build()).execute()) {
-                return execute.body().string();
+            try (Response execute = this.C.newCall(_builder.build()).execute()) {
+                return Res.of(execute);
             } catch (Exception e) {
-                throw new Exception(e);
+                return null;
             }
         }
 
     }
 
+    public OK userAgent(String ua) {
+        _builder.header("User-Agent", ua);
+        return this;
+    }
+
+    public OK charset(String charset) {
+        _charset = Charset.forName(charset);
+        return this;
+    }
+
+    public OK headers(Map<String, String> headers) {
+
+        if (headers != null) {
+            headers.forEach((k, v) -> _builder.header(k, v));
+        }
+
+        return this;
+    }
+
+
+    public OK header(String k, String v) {
+        if (k == null || v == null) {
+            return this;
+        }
+
+        _builder.header(k, v);
+        return this;
+    }
+
+    public OK addQuery(String k, String v) {
+        param.put(k, v);
+        return this;
+    }
+
+    public OK addQuery(Map<String, Object> querys) {
+        if (querys != null) {
+            param.putAll(querys);
+        }
+        return this;
+    }
 
     public OK async() {
         async = true;
         return this;
     }
 
-    /**
-     * 构建请求
-     *
-     * @return 构建器
-     */
     public OK url(String url) {
         _builder.url(url);
         return this;
@@ -100,17 +151,18 @@ public final class OK {
     }
 
     public OK post() {
-        _builder.post(new Body());
+//        _builder.post(new StreamBody("application/json",));
         return this;
     }
 
     public OK body(String json) {
-        requestBody = RequestBody.create(json, MediaType.parse("application/json"));
+        requestBody = RequestBody.create(json, null);
         return this;
     }
 
     public OK jsonBody(String json) {
         requestBody = RequestBody.create(json, MediaType.parse("application/json"));
+        _builder.post(requestBody);
         return this;
     }
 
@@ -127,15 +179,40 @@ public final class OK {
     }
 
 
-    private static final class Body extends RequestBody {
-        @Override
-        public MediaType contentType() {
-            return MediaType.parse("");
+    public static class StreamBody extends RequestBody {
+        private MediaType _contentType = null;
+        private InputStream _inputStream = null;
+
+        public StreamBody(String contentType, InputStream inputStream) {
+            if (contentType != null) {
+                _contentType = MediaType.parse(contentType);
+            }
+
+            _inputStream = inputStream;
         }
 
         @Override
-        public void writeTo(final BufferedSink bs) throws IOException {
+        public MediaType contentType() {
+            return _contentType;
+        }
+
+        @Override
+        public long contentLength() throws IOException {
+            return _inputStream.available();
+        }
+
+        @Override
+        public void writeTo(BufferedSink sink) throws IOException {
+            Source source = null;
+
+            try {
+                source = Okio.source(_inputStream);
+                sink.writeAll(source);
+            } finally {
+                Util.closeQuietly(source);
+            }
         }
     }
+
 
 }
