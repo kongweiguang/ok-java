@@ -1,4 +1,4 @@
-package cn.kpp.core;
+package cn.ok.mate;
 
 public interface Status {
     int ok = 200;

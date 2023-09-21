@@ -1,4 +1,6 @@
-package cn.kpp.core;
+package cn.ok.core;
+
+import cn.ok.OK;
 
 public class Test1 {
 
@@ -8,8 +10,10 @@ public class Test1 {
 
     private static void extracted() throws Exception {
         final Res send = OK.of()
-                .url("http://localhost:8000/hello")
+                .url("http://www.baidu.com")
                 .ok();
-        System.out.println("send = " + send.list());
+        System.out.println("send = " + send.bytes());
+
+        System.out.println("send = " + send.stream().read());
     }
 }

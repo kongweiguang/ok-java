@@ -1,12 +1,15 @@
-package cn.kpp.core;
+package cn.ok.core;
 
-import cn.kpp.core.util.EmptyIS;
-import cn.kpp.core.util.TypeRef;
+import cn.ok.util.TypeRef;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import kotlin.Pair;
 import okhttp3.Headers;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.BufferedSource;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
@@ -21,21 +24,22 @@ import java.util.StringJoiner;
 
 public final class Res {
     private final Response res;
-    private final byte[] b;
-    private final InputStream is;
+    private final byte[] bt;
 
     private Res(final Response response) {
 
-        if (Objects.isNull(response.body())) {
-            this.is = EmptyIS.of;
-            this.b = new byte[]{};
-        } else {
-            this.is = response.body().byteStream();
-            try {
-                this.b = response.body().bytes();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+        try {
+            final ResponseBody body = response.body();
+
+            if (Objects.isNull(body)) {
+                this.bt = new byte[]{};
+            } else {
+                final BufferedSource source = body.source();
+                this.bt = source.readByteArray();
             }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
         this.res = response;
@@ -69,7 +73,7 @@ public final class Res {
     }
 
     public byte[] bytes() {
-        return b;
+        return bt;
     }
 
     public String str() {
@@ -77,19 +81,23 @@ public final class Res {
     }
 
     public String str(Charset charset) {
-        return new String(b, charset);
+        return new String(bt, charset);
+    }
+
+    public JSONObject jsonObj() {
+        return JSON.parseObject(str());
     }
 
     public InputStream stream() {
-        return this.is;
+        return new ByteArrayInputStream(bytes());
     }
 
     public <R> R obj(Class<R> clazz) {
-        return JSON.parseObject(b, clazz);
+        return JSON.parseObject(bt, clazz);
     }
 
     public <R> R obj(Type type) {
-        return JSON.parseObject(b, type);
+        return JSON.parseObject(bt, type);
     }
 
     public Integer rInt() {

@@ -10,20 +10,16 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cn.kpp.core;
+package cn.ok.mate;
 
 /**
  *
  */
 public enum HeaderName {
-    AUTHORIZATION("Authorization"),
-
-    CONTENT_TYPE("Content-Type"),
-
-    USER_AGENT("User-Agent"),
-
-    COOKIE("Cookie");
-
+    authorization("Authorization"),
+    content_type("Content-Type"),
+    user_agent("User-Agent"),
+    cookie("Cookie");
 
     private final String v;
 

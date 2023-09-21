@@ -10,19 +10,21 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cn.kpp.core;
+package cn.ok.mate;
 
 
 public enum Method {
     GET,
     POST,
+    DELETE,
+    PUT,
+    PATCH,
     HEAD,
     OPTIONS,
-    PUT,
-    DELETE,
     TRACE,
     CONNECT,
-    PATCH;
+
+    ;
 
 
 }

@@ -1,5 +1,6 @@
-package cn.kpp.core;
+package cn.ok.core;
 
+import cn.ok.OK;
 import org.junit.jupiter.api.Test;
 
 public class SendTest {

@@ -1,4 +1,4 @@
-package cn.kpp.core.util;
+package cn.ok.util;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
