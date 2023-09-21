@@ -31,3 +31,32 @@
 * api友好
 
 
+### 例子
+
+- get请求
+```java
+final Res res = OK.of()
+                .get()
+                .url("http://localhost:8080/get")
+                .query("a", "1")
+                .query("b", "2")
+                .query("c", "3")
+                .ok();
+System.out.println("res = " + res.str());
+```
+- post请求
+```java
+ final Res res = OK.of()
+                .post()
+                .url("http://localhost:8080/post")
+                .query("a", "a")
+                .query("b", "b")
+                .query("c", "c")
+                .jsonBody(new HashMap<String, Object>() {{
+                    put("a", "1");
+                    put("b", "2");
+                    put("c", "3");
+                }})
+                .ok();
+        System.out.println("res = " + res.headers());
+```
