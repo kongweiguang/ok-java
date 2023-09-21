@@ -1,6 +1,6 @@
-package cn.ok.core;
+package cn.kpp.ok.core;
 
-import cn.ok.OK;
+import cn.kpp.ok.OK;
 
 public class Test1 {
 

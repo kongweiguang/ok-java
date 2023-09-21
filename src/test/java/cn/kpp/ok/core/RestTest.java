@@ -1,6 +1,6 @@
-package cn.ok.core;
+package cn.kpp.ok.core;
 
-import cn.ok.OK;
+import cn.kpp.ok.OK;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;

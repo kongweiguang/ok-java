@@ -1,6 +1,6 @@
-package cn.ok.core;
+package cn.kpp.ok.core;
 
-import cn.ok.util.TypeRef;
+import cn.kpp.ok.util.TypeRef;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import kotlin.Pair;

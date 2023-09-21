@@ -10,21 +10,29 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package cn.ok.mate;
+package cn.kpp.ok.mate;
 
+/**
+ *
+ */
+public enum HeaderName {
+    authorization("Authorization"),
+    content_type("Content-Type"),
+    user_agent("User-Agent"),
+    cookie("Cookie");
 
-public enum Method {
-    GET,
-    POST,
-    DELETE,
-    PUT,
-    PATCH,
-    HEAD,
-    OPTIONS,
-    TRACE,
-    CONNECT,
+    private final String v;
 
-    ;
+    HeaderName(final String v) {
+        this.v = v;
+    }
 
+    public String v() {
+        return v;
+    }
 
+    @Override
+    public String toString() {
+        return v();
+    }
 }

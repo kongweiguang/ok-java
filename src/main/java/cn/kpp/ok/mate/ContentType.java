@@ -1,4 +1,4 @@
-package cn.ok.mate;
+package cn.kpp.ok.mate;
 
 
 public enum ContentType {

@@ -1,4 +1,4 @@
-package cn.ok.core;
+package cn.kpp.ok.core;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
