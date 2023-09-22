@@ -9,7 +9,7 @@ public class SendTest {
         final Res send = OK.of()
                 .url("http://localhost:8000/hello")
                 .post()
-                .jsonBody("{\n" +
+                .json("{\n" +
                         "    \"key\":\"i am key\"\n" +
                         "}")
                 .ok();

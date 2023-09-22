@@ -3,11 +3,13 @@ package cn.kpp.ok;
 
 import cn.kpp.ok.core.ReqBody;
 import cn.kpp.ok.core.Res;
+import cn.kpp.ok.core.Timeout;
 import cn.kpp.ok.core.TimeoutInterceptor;
 import cn.kpp.ok.mate.Const;
 import cn.kpp.ok.mate.ContentType;
 import cn.kpp.ok.mate.Header;
 import cn.kpp.ok.mate.Method;
+import cn.kpp.ok.mate.ReqType;
 import com.alibaba.fastjson2.JSON;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -17,8 +19,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.WebSocketListener;
 import okhttp3.internal.http.HttpMethod;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -27,18 +29,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import static java.util.Objects.nonNull;
 
 /**
  * 基于okhttp封装的http请求工具
  *
  * @author kongweiguang
  */
-public class OK {
+public final class OK {
 
-    protected static final OkHttpClient default_c = new OkHttpClient.Builder()
+    private static final OkHttpClient default_c = new OkHttpClient.Builder()
             .connectTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
@@ -63,20 +66,26 @@ public class OK {
     private final Map<String, String> cookie = new HashMap<>();
     private final List<String> paths = new ArrayList<>();
 
+    //async
     private boolean async = false;
     private Consumer<Res> success;
     private Consumer<IOException> fail;
 
+    //ws
+    private WebSocketListener listener;
 
-    protected OkHttpClient client() {
+    private ReqType typeEnum = ReqType.http;
+
+
+    private OkHttpClient client() {
         return this.C;
     }
 
-    protected Request.Builder builder() {
+    private Request.Builder builder() {
         return this.builder;
     }
 
-    protected OK(OkHttpClient c) {
+    private OK(OkHttpClient c) {
         this.C = c;
         this.builder = new Request.Builder();
     }
@@ -96,10 +105,20 @@ public class OK {
      */
     public Res ok() {
         bf();
-        return res();
+        switch (typeEnum) {
+            case http:
+                return http0();
+            case ws:
+                ws0();
+                break;
+            case sse:
+                sse();
+                break;
+        }
+        return null;
     }
 
-    protected void bf() {
+    private void bf() {
         addQuery();
         addForm();
         addCookie();
@@ -113,7 +132,7 @@ public class OK {
             this.query.forEach(urlBuilder::addEncodedQueryParameter);
         }
 
-        if (Objects.nonNull(this.url)) {
+        if (nonNull(this.url)) {
             this.builder.url(this.url);
         } else {
 
@@ -151,29 +170,33 @@ public class OK {
     }
 
     private void switchM() {
-        builder.method(
-                method.name(),
-                HttpMethod.permitsRequestBody(this.method.name()) ?
-                        (Objects.nonNull(this.formBody) ? this.formBody : new ReqBody(this.contentType, reqBody.getBytes(this.charset))) :
-                        null
-        );
+        RequestBody rb = null;
 
+        if (HttpMethod.permitsRequestBody(this.method.name())) {
+            if (nonNull(this.formBody)) {
+                rb = this.formBody;
+            } else {
+                new ReqBody(this.contentType, reqBody.getBytes(this.charset));
+            }
+        }
+
+        builder.method(method.name(), rb);
     }
 
-    private Res res() {
+    private Res http0() {
         if (async) {
             this.C.newCall(this.builder.build()).enqueue(new Callback() {
                 @Override
-                public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
-                    if (Objects.nonNull(fail)) {
+                public void onFailure(final Call call, final IOException e) {
+                    if (nonNull(fail)) {
                         fail.accept(e);
                     }
                     call.cancel();
                 }
 
                 @Override
-                public void onResponse(@NotNull final Call call, @NotNull final Response response) throws IOException {
-                    if (Objects.nonNull(success)) {
+                public void onResponse(final Call call, final Response response) throws IOException {
+                    if (nonNull(success)) {
                         success.accept(Res.of(response));
                     }
                     call.cancel();
@@ -190,6 +213,21 @@ public class OK {
         }
     }
 
+    public OK timeout(int timeoutSeconds) {
+        if (timeoutSeconds > 0) {
+            this.builder.tag(Timeout.class, new Timeout(timeoutSeconds));
+        }
+
+        return this;
+    }
+
+    public OK timeout(int connectTimeoutSeconds, int writeTimeoutSeconds, int readTimeoutSeconds) {
+        if (connectTimeoutSeconds > 0) {
+            this.builder.tag(Timeout.class, new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds));
+        }
+
+        return this;
+    }
 
     public OK userAgent(final String ua) {
         this.builder.header(Header.user_agent.v(), ua);
@@ -202,7 +240,7 @@ public class OK {
     }
 
     public OK headers(final Map<String, String> headers) {
-        if (headers != null) {
+        if (nonNull(headers)) {
             headers.forEach(this.builder::header);
         }
 
@@ -210,7 +248,7 @@ public class OK {
     }
 
     public OK header(final String k, final String v) {
-        if (k == null || v == null) {
+        if (nonNull(k) || nonNull(v)) {
             return this;
         }
 
@@ -219,7 +257,7 @@ public class OK {
     }
 
     public OK cookie(final String k, final String v) {
-        if (k == null || v == null) {
+        if (nonNull(k) || nonNull(v)) {
             return this;
         }
 
@@ -229,7 +267,7 @@ public class OK {
     }
 
     public OK cookie(final Map<String, String> cookies) {
-        if (cookies != null) {
+        if (nonNull(cookies)) {
             this.cookie.putAll(cookies);
         }
 
@@ -242,7 +280,7 @@ public class OK {
     }
 
     public OK query(final Map<String, String> querys) {
-        if (querys != null) {
+        if (nonNull(querys)) {
             this.query.putAll(querys);
         }
 
@@ -320,13 +358,13 @@ public class OK {
         return this;
     }
 
-    public OK jsonBody(final String json) {
+    public OK json(final String json) {
         this.contentType = ContentType.json.v();
         reqBody = json;
         return this;
     }
 
-    public OK jsonBody(final Map<String, Object> json) {
+    public OK json(final Map<String, Object> json) {
         this.contentType = ContentType.json.v();
         reqBody = JSON.toJSONString(json);
         return this;
@@ -394,4 +432,27 @@ public class OK {
     public List<String> paths() {
         return paths;
     }
+
+
+    //ws
+    public OK listener(WebSocketListener listener) {
+        this.listener = listener;
+        return this;
+    }
+
+    public OK ws() {
+        this.typeEnum = ReqType.ws;
+        return this;
+    }
+
+    private void ws0() {
+        this.client().newWebSocket(this.builder.build(), this.listener);
+    }
+
+    //todo
+    //sse
+    public OK sse() {
+        return this;
+    }
+
 }

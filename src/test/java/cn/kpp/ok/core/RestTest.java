@@ -26,7 +26,7 @@ public class RestTest {
                 .query("a", "a")
                 .query("b", "b")
                 .query("c", "c")
-                .jsonBody(new HashMap<String, Object>() {{
+                .json(new HashMap<String, Object>() {{
                     put("a", "1");
                     put("b", "2");
                     put("c", "3");
