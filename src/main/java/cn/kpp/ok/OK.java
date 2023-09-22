@@ -25,11 +25,13 @@ import okhttp3.internal.http.HttpMethod;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
 import static java.util.Objects.nonNull;
@@ -70,6 +72,12 @@ public final class OK {
     private boolean async = false;
     private Consumer<Res> success;
     private Consumer<IOException> fail;
+
+    //retry
+    private boolean retry = false;
+    int max;
+    Duration delay;
+    BiPredicate<Res, Throwable> predicate;
 
     //ws
     private WebSocketListener listener;
@@ -287,10 +295,6 @@ public final class OK {
         return this;
     }
 
-    public OK async() {
-        this.async = true;
-        return this;
-    }
 
     public OK scheme(final String scheme) {
         this.scheme = scheme;
@@ -371,6 +375,13 @@ public final class OK {
     }
 
 
+    //async
+
+    public OK async() {
+        this.async = true;
+        return this;
+    }
+
     public OK success(final Consumer<Res> success) {
         this.success = success;
         return this;
@@ -379,6 +390,24 @@ public final class OK {
 
     public OK fail(final Consumer<IOException> fail) {
         this.fail = fail;
+        return this;
+    }
+
+
+    //retry
+    public OK retry(int max, Duration delay) {
+        this.retry = true;
+        this.max = max;
+        this.delay = delay;
+        this.predicate = (r, e) -> true;
+        return this;
+    }
+
+    public OK retry(int max, Duration delay, BiPredicate<Res, Throwable> predicate) {
+        this.retry = true;
+        this.max = max;
+        this.delay = delay;
+        this.predicate = predicate;
         return this;
     }
 

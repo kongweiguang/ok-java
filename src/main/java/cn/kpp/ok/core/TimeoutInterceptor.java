@@ -12,11 +12,11 @@ import java.util.concurrent.TimeUnit;
  * @author kongweiguang
  */
 public final class TimeoutInterceptor implements Interceptor {
+    public static final TimeoutInterceptor of = new TimeoutInterceptor();
 
     private TimeoutInterceptor() {
     }
 
-    public static final TimeoutInterceptor of = new TimeoutInterceptor();
 
     @Override
     public Response intercept(Chain chain) throws IOException {
