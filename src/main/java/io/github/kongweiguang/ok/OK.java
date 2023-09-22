@@ -1,8 +1,10 @@
 package io.github.kongweiguang.ok;
 
 
+import com.alibaba.fastjson2.JSON;
 import io.github.kongweiguang.ok.core.ReqBody;
 import io.github.kongweiguang.ok.core.Res;
+import io.github.kongweiguang.ok.core.Retry;
 import io.github.kongweiguang.ok.core.Timeout;
 import io.github.kongweiguang.ok.core.TimeoutInterceptor;
 import io.github.kongweiguang.ok.mate.Const;
@@ -10,7 +12,6 @@ import io.github.kongweiguang.ok.mate.ContentType;
 import io.github.kongweiguang.ok.mate.Header;
 import io.github.kongweiguang.ok.mate.Method;
 import io.github.kongweiguang.ok.mate.ReqType;
-import com.alibaba.fastjson2.JSON;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -113,17 +114,31 @@ public final class OK {
      */
     public Res ok() {
         bf();
+        if (req()) {
+            if (this.retry) {
+                return Retry.predicate(this::http0, this.predicate)
+                        .execute()
+                        .get()
+                        .orElse(null);
+            } else {
+                return this.http0();
+            }
+        }
+        return null;
+    }
+
+    private boolean req() {
         switch (typeEnum) {
             case http:
-                return http0();
+                return true;
             case ws:
                 ws0();
                 break;
             case sse:
-                sse();
+                sse0();
                 break;
         }
-        return null;
+        return false;
     }
 
     private void bf() {
@@ -480,7 +495,7 @@ public final class OK {
 
     //todo
     //sse
-    public OK sse() {
+    public OK sse0() {
         return this;
     }
 
