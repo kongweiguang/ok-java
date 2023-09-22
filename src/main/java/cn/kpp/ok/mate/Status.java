@@ -1,5 +1,11 @@
 package cn.kpp.ok.mate;
 
+
+/**
+ * http中相应涉及到的常量
+ *
+ * @author kongweiguang
+ */
 public interface Status {
     int ok = 200;
     int internal_error = 500;

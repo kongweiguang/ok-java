@@ -13,9 +13,11 @@
 package cn.kpp.ok.mate;
 
 /**
+ * Header中涉及到的常量
  *
+ * @author kongweiguang
  */
-public enum HeaderName {
+public enum Header {
     authorization("Authorization"),
     content_type("Content-Type"),
     user_agent("User-Agent"),
@@ -23,7 +25,7 @@ public enum HeaderName {
 
     private final String v;
 
-    HeaderName(final String v) {
+    Header(final String v) {
         this.v = v;
     }
 

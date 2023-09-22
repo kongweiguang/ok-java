@@ -12,7 +12,11 @@
 
 package cn.kpp.ok.mate;
 
-
+/**
+ * http中Method涉及到的常量
+ *
+ * @author kongweiguang
+ */
 public enum Method {
     GET,
     POST,

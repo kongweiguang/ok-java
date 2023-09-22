@@ -6,6 +6,11 @@ import okio.BufferedSink;
 
 import java.io.IOException;
 
+/**
+ * http请求体
+ *
+ * @author kongweiguang
+ */
 public final class ReqBody extends RequestBody {
     private final MediaType mt;
     private final byte[] bt;

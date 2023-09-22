@@ -7,7 +7,6 @@ import kotlin.Pair;
 import okhttp3.Headers;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okio.BufferedSource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,9 +18,15 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.StringJoiner;
 
+import static java.util.Objects.isNull;
+
+/**
+ * http的响应
+ *
+ * @author kongweiguang
+ */
 public final class Res {
     private final Response res;
     private final byte[] bt;
@@ -31,13 +36,11 @@ public final class Res {
         try {
             final ResponseBody body = response.body();
 
-            if (Objects.isNull(body)) {
+            if (isNull(body)) {
                 this.bt = new byte[]{};
             } else {
-                final BufferedSource source = body.source();
-                this.bt = source.readByteArray();
+                this.bt = body.bytes();
             }
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -81,7 +84,7 @@ public final class Res {
     }
 
     public String str(Charset charset) {
-        return new String(bt, charset);
+        return new String(bytes(), charset);
     }
 
     public JSONObject jsonObj() {
@@ -93,11 +96,11 @@ public final class Res {
     }
 
     public <R> R obj(Class<R> clazz) {
-        return JSON.parseObject(bt, clazz);
+        return JSON.parseObject(bytes(), clazz);
     }
 
     public <R> R obj(Type type) {
-        return JSON.parseObject(bt, type);
+        return JSON.parseObject(bytes(), type);
     }
 
     public Integer rInt() {
@@ -113,13 +116,11 @@ public final class Res {
     }
 
     public <E> List<E> list() {
-        return obj(new TypeRef<List<E>>() {
-        }.getType());
+        return obj(new TypeRef<List<E>>().type());
     }
 
     public <K, V> Map<K, V> map() {
-        return obj(new TypeRef<Map<K, V>>() {
-        }.getType());
+        return obj(new TypeRef<Map<K, V>>().type());
     }
 
     @Override

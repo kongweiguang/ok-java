@@ -3,9 +3,10 @@ package cn.kpp.ok;
 
 import cn.kpp.ok.core.ReqBody;
 import cn.kpp.ok.core.Res;
+import cn.kpp.ok.core.TimeoutInterceptor;
 import cn.kpp.ok.mate.Const;
 import cn.kpp.ok.mate.ContentType;
-import cn.kpp.ok.mate.HeaderName;
+import cn.kpp.ok.mate.Header;
 import cn.kpp.ok.mate.Method;
 import com.alibaba.fastjson2.JSON;
 import okhttp3.Call;
@@ -31,14 +32,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
+ * 基于okhttp封装的http请求工具
+ *
  * @author kongweiguang
  */
-public final class OK {
+public class OK {
 
-    private static final OkHttpClient default_c = new OkHttpClient.Builder()
+    protected static final OkHttpClient default_c = new OkHttpClient.Builder()
             .connectTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(TimeoutInterceptor.of)
             .build();
 
 
@@ -64,7 +68,15 @@ public final class OK {
     private Consumer<IOException> fail;
 
 
-    private OK(OkHttpClient c) {
+    protected OkHttpClient client() {
+        return this.C;
+    }
+
+    protected Request.Builder builder() {
+        return this.builder;
+    }
+
+    protected OK(OkHttpClient c) {
         this.C = c;
         this.builder = new Request.Builder();
     }
@@ -83,11 +95,15 @@ public final class OK {
      * @return Res {@code  Res}
      */
     public Res ok() {
+        bf();
+        return res();
+    }
+
+    protected void bf() {
         addQuery();
         addForm();
         addCookie();
         switchM();
-        return res();
     }
 
     private void addQuery() {
@@ -113,7 +129,7 @@ public final class OK {
 
     private void addCookie() {
         if (!this.cookie.isEmpty()) {
-            this.builder.addHeader(HeaderName.cookie.v(), cookie2Str(this.cookie));
+            this.builder.addHeader(Header.cookie.v(), cookie2Str(this.cookie));
         }
     }
 
@@ -132,6 +148,16 @@ public final class OK {
             this.form.forEach(b::addEncoded);
             this.formBody = b.build();
         }
+    }
+
+    private void switchM() {
+        builder.method(
+                method.name(),
+                HttpMethod.permitsRequestBody(this.method.name()) ?
+                        (Objects.nonNull(this.formBody) ? this.formBody : new ReqBody(this.contentType, reqBody.getBytes(this.charset))) :
+                        null
+        );
+
     }
 
     private Res res() {
@@ -164,18 +190,9 @@ public final class OK {
         }
     }
 
-    private void switchM() {
-        builder.method(
-                method.name(),
-                HttpMethod.permitsRequestBody(this.method.name()) ?
-                        (Objects.nonNull(this.formBody) ? this.formBody : new ReqBody(this.contentType, reqBody.getBytes(this.charset))) :
-                        null
-        );
-
-    }
 
     public OK userAgent(final String ua) {
-        this.builder.header(HeaderName.user_agent.v(), ua);
+        this.builder.header(Header.user_agent.v(), ua);
         return this;
     }
 
@@ -329,7 +346,6 @@ public final class OK {
 
 
     //--------------------------------------get
-
 
     public String scheme() {
         return scheme;

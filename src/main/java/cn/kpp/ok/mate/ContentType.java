@@ -1,6 +1,11 @@
 package cn.kpp.ok.mate;
 
 
+/**
+ * ContentType中涉及到的常量
+ *
+ * @author kongweiguang
+ */
 public enum ContentType {
 
     form_urlencoded("application/x-www-form-urlencoded"),
