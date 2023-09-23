@@ -106,10 +106,10 @@ final Res res=OK.of()
         .query("a","1")
         .retry(3,Duration.ofSeconds(2),(r,t)->{
             final String str=r.str();
-                    if(str.length()>10){
-                    return true;
-                    }
-                    return false;
+            if(str.length()>10){
+                return true;
+            }
+            return false;
         })
         .ok();
 ```
@@ -137,8 +137,7 @@ final Res ok=OK.of()
 final String str=res.str();
 final byte[]bytes=res.bytes();
 final User obj=res.obj(User.class);
-final List<User> obj1=res.obj(new TypeRef<List<User>>(){{
-        }}.type());
+final List<User> obj1=res.obj(new TypeRef<List<User>>(){}.type());
 final List<String> list=res.list();
 final Map<String, String> map=res.map();
 final JSONObject jsonObject=res.jsonObj();

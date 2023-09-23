@@ -25,8 +25,7 @@ public class ResTest {
         final String str = res.str();
         final byte[] bytes = res.bytes();
         final User obj = res.obj(User.class);
-        final List<User> obj1 = res.obj(new TypeRef<List<User>>() {{
-        }}.type());
+        final List<User> obj1 = res.obj(new TypeRef<List<User>>() {}.type());
         final List<String> list = res.list();
         final Map<String, String> map = res.map();
         final JSONObject jsonObject = res.jsonObj();
