@@ -7,6 +7,7 @@ public class UrlTest {
     @Test
     void test1() {
         final Res res = OK.of()
+                .get()
                 .scheme("http")
                 .host("localhost")
                 .port(8080)

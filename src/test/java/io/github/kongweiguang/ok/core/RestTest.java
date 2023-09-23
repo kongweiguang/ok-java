@@ -10,7 +10,7 @@ public class RestTest {
     void testGet() {
         final Res res = OK.of()
                 .get()
-                .url("http://localhost:8080/get")
+                .url("http://localhost:80/get_string")
                 .query("a", "1")
                 .query("b", "2")
                 .query("c", "3")
@@ -19,21 +19,41 @@ public class RestTest {
     }
 
     @Test
+    void testGetJson() {
+        final Res res = OK.of()
+                .get()
+                .url("http://localhost:80/get_json")
+                .query("a", "1")
+                .query("b", "2")
+                .query("c", "3")
+                .ok();
+        System.out.println("res = " + res.jsonObj());
+    }
+
+    @Test
     void testPost() {
         final Res res = OK.of()
                 .post()
-                .url("http://localhost:8080/post")
-                .query("a", "a")
-                .query("b", "b")
-                .query("c", "c")
+                .url("http://localhost:80/post_json")
                 .json(new HashMap<String, Object>() {{
                     put("a", "1");
                     put("b", "2");
                     put("c", "3");
                 }})
                 .ok();
-        System.out.println("res = " + res.headers());
+        System.out.println("res = " + res.str());
     }
+
+
+    @Test
+    void testList() {
+        final Res res = OK.of()
+                .get()
+                .url("http://localhost:80/get_list")
+                .ok();
+        System.out.println("res = " + res.list());
+    }
+
 
 
 }

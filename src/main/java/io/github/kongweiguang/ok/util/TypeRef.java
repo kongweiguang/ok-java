@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
  *
  * @author kongweiguang
  */
-public class TypeRef<T> {
+public abstract class TypeRef<T> {
     private final Type type;
 
     public TypeRef() {

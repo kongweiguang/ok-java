@@ -5,8 +5,6 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
@@ -163,14 +161,6 @@ public class Retry<T> {
         return Optional.ofNullable(this.result);
     }
 
-    /**
-     * 异步执行重试方法
-     *
-     * @return 返回一个异步对象 {@link CompletableFuture}
-     */
-    public CompletableFuture<Retry<T>> asyncExecute() {
-        return CompletableFuture.supplyAsync(this::doExecute, Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()));
-    }
 
     /**
      * 同步执行重试方法

@@ -1,8 +1,8 @@
 package io.github.kongweiguang.ok.core;
 
-import io.github.kongweiguang.ok.util.TypeRef;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import io.github.kongweiguang.ok.util.TypeRef;
 import kotlin.Pair;
 import okhttp3.Headers;
 import okhttp3.Response;
@@ -116,11 +116,13 @@ public final class Res {
     }
 
     public <E> List<E> list() {
-        return obj(new TypeRef<List<E>>().type());
+        return obj(new TypeRef<List<E>>() {
+        }.type());
     }
 
     public <K, V> Map<K, V> map() {
-        return obj(new TypeRef<Map<K, V>>().type());
+        return obj(new TypeRef<Map<K, V>>() {
+        }.type());
     }
 
     @Override

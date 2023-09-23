@@ -12,10 +12,8 @@ public class AsyncTest {
         final Res res = OK.of()
                 .async()
                 .get()
-                .url("https://localhost:8080/get")
+                .url("https://localhost:80/get")
                 .query("a", "1")
-                .query("b", "2")
-                .query("c", "3")
                 .success(r -> System.out.println(r.str()))
                 .fail(System.out::println)
                 .ok();

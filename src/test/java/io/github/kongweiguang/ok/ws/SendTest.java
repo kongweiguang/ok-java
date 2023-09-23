@@ -1,21 +1,23 @@
 package io.github.kongweiguang.ok.ws;
 
 import io.github.kongweiguang.ok.OK;
+import io.github.kongweiguang.ok.core.Res;
 import okhttp3.WebSocket;
-import okio.ByteString;
+import okhttp3.WebSocketListener;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
 
 public class SendTest {
     @Test
     void test() {
-        OK.of()
+
+        final Res ok = OK.of()
                 .ws()
-                .listener(new OkListener() {
+                .url("ws://websocket/test")
+                .listener(new WebSocketListener() {
                     @Override
-                    public void onMessage(final WebSocket webSocket, final ByteString bytes) {
-                        System.out.println(bytes.string(StandardCharsets.UTF_8));
+                    public void onMessage(@NotNull final WebSocket webSocket, @NotNull final String text) {
+                        System.out.println("text = " + text);
                     }
                 })
                 .ok();

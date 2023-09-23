@@ -12,6 +12,7 @@ import io.github.kongweiguang.ok.mate.ContentType;
 import io.github.kongweiguang.ok.mate.Header;
 import io.github.kongweiguang.ok.mate.Method;
 import io.github.kongweiguang.ok.mate.ReqType;
+import io.github.kongweiguang.ok.util.MultiValueMap;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -31,10 +32,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 /**
@@ -64,10 +67,11 @@ public final class OK {
     private Charset charset = StandardCharsets.UTF_8;
     private Method method = Method.GET;
 
-    private final Map<String, String> form = new HashMap<>();
-    private final Map<String, String> query = new HashMap<>();
+    private Map<String, String> form;
+    private final MultiValueMap<String, String> query = new MultiValueMap<>();
     private final Map<String, String> cookie = new HashMap<>();
     private final List<String> paths = new ArrayList<>();
+
 
     //async
     private boolean async = false;
@@ -76,9 +80,9 @@ public final class OK {
 
     //retry
     private boolean retry = false;
-    int max;
-    Duration delay;
-    BiPredicate<Res, Throwable> predicate;
+    private int max;
+    private Duration delay = Duration.ofSeconds(1);
+    private BiPredicate<Res, Throwable> predicate;
 
     //ws
     private WebSocketListener listener;
@@ -117,6 +121,8 @@ public final class OK {
         if (req()) {
             if (this.retry) {
                 return Retry.predicate(this::http0, this.predicate)
+                        .maxAttempts(this.max)
+                        .delay(this.delay)
                         .execute()
                         .get()
                         .orElse(null);
@@ -151,8 +157,10 @@ public final class OK {
     private void addQuery() {
         final HttpUrl.Builder urlBuilder = new HttpUrl.Builder();
 
-        if (!this.query.isEmpty()) {
-            this.query.forEach(urlBuilder::addEncodedQueryParameter);
+        if (!this.query.map().isEmpty()) {
+            this.query.map().forEach((k, v) ->
+                    v.forEach(e -> urlBuilder.addEncodedQueryParameter(k, e))
+            );
         }
 
         if (nonNull(this.url)) {
@@ -185,7 +193,7 @@ public final class OK {
 
 
     private void addForm() {
-        if (!this.form.isEmpty()) {
+        if (nonNull(this.form)) {
             final FormBody.Builder b = new FormBody.Builder();
             this.form.forEach(b::addEncoded);
             this.formBody = b.build();
@@ -199,7 +207,7 @@ public final class OK {
             if (nonNull(this.formBody)) {
                 rb = this.formBody;
             } else {
-                new ReqBody(this.contentType, reqBody.getBytes(this.charset));
+                rb = new ReqBody(this.contentType, reqBody.getBytes(this.charset));
             }
         }
 
@@ -262,6 +270,11 @@ public final class OK {
         return this;
     }
 
+    public OK charset(final Charset charset) {
+        this.charset = charset;
+        return this;
+    }
+
     public OK headers(final Map<String, String> headers) {
         if (nonNull(headers)) {
             headers.forEach(this.builder::header);
@@ -270,12 +283,12 @@ public final class OK {
         return this;
     }
 
-    public OK header(final String k, final String v) {
-        if (nonNull(k) || nonNull(v)) {
+    public OK header(final String name, final String value) {
+        if (isNull(name) || isNull(value)) {
             return this;
         }
 
-        this.builder.header(k, v);
+        this.builder.header(name, value);
         return this;
     }
 
@@ -304,7 +317,7 @@ public final class OK {
 
     public OK query(final Map<String, String> querys) {
         if (nonNull(querys)) {
-            this.query.putAll(querys);
+            querys.forEach(this.query::put);
         }
 
         return this;
@@ -368,7 +381,7 @@ public final class OK {
 
 
     public OK form(final Map<String, String> form) {
-        this.form.putAll(form);
+        this.form = form;
         return this;
     }
 
@@ -391,7 +404,6 @@ public final class OK {
 
 
     //async
-
     public OK async() {
         this.async = true;
         return this;
@@ -410,10 +422,9 @@ public final class OK {
 
 
     //retry
-    public OK retry(int max, Duration delay) {
+    public OK retry(int max) {
         this.retry = true;
         this.max = max;
-        this.delay = delay;
         this.predicate = (r, e) -> true;
         return this;
     }
@@ -465,8 +476,8 @@ public final class OK {
         return form;
     }
 
-    public Map<String, String> query() {
-        return query;
+    public Map<String, Set<String>> query() {
+        return query.map();
     }
 
     public Map<String, String> cookie() {
