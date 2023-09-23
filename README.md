@@ -28,6 +28,27 @@
 * api友好，用的很爽
 * 链式编程
 
+### 使用方式
+Maven
+```xml
+<dependency>
+    <groupId>io.github.kongweiguang</groupId>
+    <artifactId>OK</artifactId>
+    <version>0.0.2</version>
+</dependency>
+```
+
+Gradle
+```xml
+implementation group: 'io.github.kongweiguang', name: 'OK', version: '0.0.2'
+```
+
+Gradle-Kotlin
+```xml
+implementation("io.github.kongweiguang:OK:0.0.1")
+```
+
+
 ### 例子
 
 - get请求
