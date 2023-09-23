@@ -45,7 +45,7 @@ implementation group: 'io.github.kongweiguang', name: 'OK', version: '0.0.2'
 
 Gradle-Kotlin
 ```xml
-implementation("io.github.kongweiguang:OK:0.0.1")
+implementation("io.github.kongweiguang:OK:0.0.2")
 ```
 
 
