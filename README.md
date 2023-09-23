@@ -100,7 +100,7 @@ final Res res=OK.of()
         .ok();
 ```
 
-- 重试请求
+- retry重试请求
 
 ```java
 final Res res=OK.of()
@@ -162,7 +162,7 @@ final Res res=OK.of()
         .ok();
 ```
 
-响应
+res响应
 
 ```java
 
