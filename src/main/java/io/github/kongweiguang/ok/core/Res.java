@@ -9,11 +9,15 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -124,6 +128,15 @@ public final class Res {
         return obj(new TypeRef<Map<K, V>>() {
         }.type());
     }
+
+    public void file(String path) {
+        try (OutputStream outputStream = Files.newOutputStream(Paths.get(path))) {
+            outputStream.write(bytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     @Override
     public String toString() {

@@ -17,6 +17,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -32,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -72,6 +72,8 @@ public final class OK {
     private final Map<String, String> cookie = new HashMap<>();
     private final List<String> paths = new ArrayList<>();
 
+    private boolean multipart = false;
+    private final MultipartBody.Builder mul = new MultipartBody.Builder().setType(MultipartBody.FORM);
 
     //async
     private boolean async = false;
@@ -89,14 +91,6 @@ public final class OK {
 
     private ReqType typeEnum = ReqType.http;
 
-
-    private OkHttpClient client() {
-        return this.C;
-    }
-
-    private Request.Builder builder() {
-        return this.builder;
-    }
 
     private OK(OkHttpClient c) {
         this.C = c;
@@ -119,29 +113,28 @@ public final class OK {
     public Res ok() {
         bf();
         if (req()) {
-            if (this.retry) {
+            if (retry()) {
                 return Retry.predicate(this::http0, this.predicate)
-                        .maxAttempts(this.max)
-                        .delay(this.delay)
+                        .maxAttempts(max())
+                        .delay(delay())
                         .execute()
                         .get()
                         .orElse(null);
             } else {
-                return this.http0();
+                return http0();
             }
         }
         return null;
     }
 
     private boolean req() {
-        switch (typeEnum) {
+        switch (typeEnum()) {
             case http:
                 return true;
             case ws:
                 ws0();
                 break;
             case sse:
-                sse0();
                 break;
         }
         return false;
@@ -157,29 +150,28 @@ public final class OK {
     private void addQuery() {
         final HttpUrl.Builder urlBuilder = new HttpUrl.Builder();
 
-        if (!this.query.map().isEmpty()) {
-            this.query.map().forEach((k, v) ->
+        if (!query().map().isEmpty()) {
+            query().map().forEach((k, v) ->
                     v.forEach(e -> urlBuilder.addEncodedQueryParameter(k, e))
             );
         }
 
-        if (nonNull(this.url)) {
-            this.builder.url(this.url);
+        if (nonNull(url())) {
+            builder().url(url());
         } else {
+            paths().forEach(urlBuilder::addPathSegments);
 
-            this.paths.forEach(urlBuilder::addPathSegments);
+            urlBuilder.scheme(scheme());
+            urlBuilder.host(host());
+            urlBuilder.port(port());
 
-            urlBuilder.scheme(this.scheme);
-            urlBuilder.host(this.host);
-            urlBuilder.port(this.port);
-
-            this.builder.url(urlBuilder.build());
+            builder().url(urlBuilder.build());
         }
     }
 
     private void addCookie() {
-        if (!this.cookie.isEmpty()) {
-            this.builder.addHeader(Header.cookie.v(), cookie2Str(this.cookie));
+        if (!cookie().isEmpty()) {
+            builder().addHeader(Header.cookie.v(), cookie2Str(cookie()));
         }
     }
 
@@ -193,30 +185,37 @@ public final class OK {
 
 
     private void addForm() {
-        if (nonNull(this.form)) {
-            final FormBody.Builder b = new FormBody.Builder();
-            this.form.forEach(b::addEncoded);
+        if (this.multipart) {
+            form().forEach(mul()::addFormDataPart);
+        } else if (nonNull(form())) {
+            final FormBody.Builder b = new FormBody.Builder(charset());
+            form().forEach(b::addEncoded);
             this.formBody = b.build();
         }
     }
 
     private void switchM() {
+        builder().method(method().name(), addBody());
+    }
+
+    private RequestBody addBody() {
         RequestBody rb = null;
 
-        if (HttpMethod.permitsRequestBody(this.method.name())) {
-            if (nonNull(this.formBody)) {
-                rb = this.formBody;
+        if (HttpMethod.permitsRequestBody(method().name())) {
+            if (this.multipart) {
+                rb = mul().build();
+            } else if (nonNull(formBody())) {
+                rb = formBody();
             } else {
-                rb = new ReqBody(this.contentType, reqBody.getBytes(this.charset));
+                rb = new ReqBody(contentType(), charset(), reqBody().getBytes(charset()));
             }
         }
-
-        builder.method(method.name(), rb);
+        return rb;
     }
 
     private Res http0() {
-        if (async) {
-            this.C.newCall(this.builder.build()).enqueue(new Callback() {
+        if (this.async) {
+            client().newCall(builder().build()).enqueue(new Callback() {
                 @Override
                 public void onFailure(final Call call, final IOException e) {
                     if (nonNull(fail)) {
@@ -236,7 +235,7 @@ public final class OK {
 
             return null;
         } else {
-            try (Response execute = this.C.newCall(this.builder.build()).execute()) {
+            try (Response execute = client().newCall(builder().build()).execute()) {
                 return Res.of(execute);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -246,7 +245,7 @@ public final class OK {
 
     public OK timeout(int timeoutSeconds) {
         if (timeoutSeconds > 0) {
-            this.builder.tag(Timeout.class, new Timeout(timeoutSeconds));
+            builder().tag(Timeout.class, new Timeout(timeoutSeconds));
         }
 
         return this;
@@ -254,14 +253,14 @@ public final class OK {
 
     public OK timeout(int connectTimeoutSeconds, int writeTimeoutSeconds, int readTimeoutSeconds) {
         if (connectTimeoutSeconds > 0) {
-            this.builder.tag(Timeout.class, new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds));
+            builder().tag(Timeout.class, new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds));
         }
 
         return this;
     }
 
     public OK userAgent(final String ua) {
-        this.builder.header(Header.user_agent.v(), ua);
+        builder().header(Header.user_agent.v(), ua);
         return this;
     }
 
@@ -277,7 +276,7 @@ public final class OK {
 
     public OK headers(final Map<String, String> headers) {
         if (nonNull(headers)) {
-            headers.forEach(this.builder::header);
+            headers.forEach(builder()::header);
         }
 
         return this;
@@ -288,7 +287,7 @@ public final class OK {
             return this;
         }
 
-        this.builder.header(name, value);
+        builder().header(name, value);
         return this;
     }
 
@@ -297,32 +296,31 @@ public final class OK {
             return this;
         }
 
-        this.cookie.put(k, v);
+        cookie().put(k, v);
         return this;
 
     }
 
     public OK cookie(final Map<String, String> cookies) {
         if (nonNull(cookies)) {
-            this.cookie.putAll(cookies);
+            cookie().putAll(cookies);
         }
 
         return this;
     }
 
     public OK query(final String k, final String v) {
-        this.query.put(k, v);
+        query().put(k, v);
         return this;
     }
 
     public OK query(final Map<String, String> querys) {
         if (nonNull(querys)) {
-            querys.forEach(this.query::put);
+            querys.forEach(query()::put);
         }
 
         return this;
     }
-
 
     public OK scheme(final String scheme) {
         this.scheme = scheme;
@@ -369,6 +367,27 @@ public final class OK {
         return this;
     }
 
+    public OK head() {
+        this.method = Method.HEAD;
+        return this;
+    }
+
+    public OK options() {
+        this.method = Method.OPTIONS;
+        return this;
+    }
+
+    public OK trace() {
+        this.method = Method.TRACE;
+        return this;
+    }
+
+    public OK connect() {
+        this.method = Method.CONNECT;
+        return this;
+    }
+
+
     public OK method(final Method method) {
         this.method = method;
         return this;
@@ -379,6 +398,21 @@ public final class OK {
         return this;
     }
 
+    public OK multipart() {
+        this.multipart = true;
+        this.contentType = ContentType.multipart.v();
+        return this;
+    }
+
+    public OK file(String key, String fileName, byte[] bytes) {
+        this.mul.addFormDataPart(key, fileName, new ReqBody(contentType(), charset(), bytes));
+        return this;
+    }
+
+    public OK form(final String name, final String value) {
+        form().put(name, value);
+        return this;
+    }
 
     public OK form(final Map<String, String> form) {
         this.form = form;
@@ -386,19 +420,19 @@ public final class OK {
     }
 
     public OK raw(final String raw) {
-        reqBody = raw;
+        this.reqBody = raw;
         return this;
     }
 
     public OK json(final String json) {
         this.contentType = ContentType.json.v();
-        reqBody = json;
+        this.reqBody = json;
         return this;
     }
 
     public OK json(final Map<String, Object> json) {
         this.contentType = ContentType.json.v();
-        reqBody = JSON.toJSONString(json);
+        this.reqBody = JSON.toJSONString(json);
         return this;
     }
 
@@ -438,7 +472,15 @@ public final class OK {
     }
 
 
-    //--------------------------------------get
+    //get
+
+    private OkHttpClient client() {
+        return C;
+    }
+
+    private Request.Builder builder() {
+        return builder;
+    }
 
     public String scheme() {
         return scheme;
@@ -476,8 +518,8 @@ public final class OK {
         return form;
     }
 
-    public Map<String, Set<String>> query() {
-        return query.map();
+    public MultiValueMap<String, String> query() {
+        return query;
     }
 
     public Map<String, String> cookie() {
@@ -488,6 +530,45 @@ public final class OK {
         return paths;
     }
 
+    public boolean retry() {
+        return retry;
+    }
+
+    public MultipartBody.Builder mul() {
+        return mul;
+    }
+
+    public int max() {
+        return max;
+    }
+
+    public Duration delay() {
+        return delay;
+    }
+
+    public RequestBody formBody() {
+        return formBody;
+    }
+
+    public ReqType typeEnum() {
+        return typeEnum;
+    }
+
+    public Consumer<Res> success() {
+        return success;
+    }
+
+    public Consumer<IOException> fail() {
+        return fail;
+    }
+
+    public BiPredicate<Res, Throwable> predicate() {
+        return predicate;
+    }
+
+    public WebSocketListener listener() {
+        return listener;
+    }
 
     //ws
     public OK listener(WebSocketListener listener) {
@@ -501,13 +582,7 @@ public final class OK {
     }
 
     private void ws0() {
-        this.client().newWebSocket(this.builder.build(), this.listener);
-    }
-
-    //todo
-    //sse
-    public OK sse0() {
-        return this;
+        client().newWebSocket(builder().build(), listener());
     }
 
 }
