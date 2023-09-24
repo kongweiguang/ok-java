@@ -67,7 +67,7 @@ public final class OK {
     private Charset charset = StandardCharsets.UTF_8;
     private Method method = Method.GET;
 
-    private Map<String, String> form;
+    private Map<String, String> form = new HashMap<>();
     private final MultiValueMap<String, String> query = new MultiValueMap<>();
     private final Map<String, String> cookie = new HashMap<>();
     private final List<String> paths = new ArrayList<>();
@@ -394,18 +394,19 @@ public final class OK {
     }
 
     public OK path(final String path) {
-        this.paths.add(path);
+        paths().add(path);
         return this;
     }
 
     public OK multipart() {
+        this.method = Method.POST;
         this.multipart = true;
         this.contentType = ContentType.multipart.v();
         return this;
     }
 
     public OK file(String key, String fileName, byte[] bytes) {
-        this.mul.addFormDataPart(key, fileName, new ReqBody(contentType(), charset(), bytes));
+        mul().addFormDataPart(key, fileName, new ReqBody(contentType(), charset(), bytes));
         return this;
     }
 
@@ -415,7 +416,7 @@ public final class OK {
     }
 
     public OK form(final Map<String, String> form) {
-        this.form = form;
+        form().putAll(form);
         return this;
     }
 

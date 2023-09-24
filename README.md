@@ -34,18 +34,18 @@ Maven
 <dependency>
     <groupId>io.github.kongweiguang</groupId>
     <artifactId>OK</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 </dependency>
 ```
 
 Gradle
 ```xml
-implementation group: 'io.github.kongweiguang', name: 'OK', version: '0.0.2'
+implementation group: 'io.github.kongweiguang', name: 'OK', version: '0.0.3'
 ```
 
 Gradle-Kotlin
 ```xml
-implementation("io.github.kongweiguang:OK:0.0.2")
+implementation("io.github.kongweiguang:OK:0.0.3")
 ```
 
 
@@ -78,11 +78,27 @@ final Res res=OK.of()
 - form表单请求
 ```java
 final Res ok = OK.of()
-        .post()
-        .form("a", "1")
-        .form(new HashMap<String, String>() {{
-            put("b", "2");
-        }})
+.post()
+.url("http://localhost:80/post_form")
+.form("a", "1")
+.form(new HashMap<String, String>() {{
+put("b", "2");
+}})
+.ok();
+```
+
+- 构建url
+```java
+final Res res = OK.of()
+        .get()
+        .scheme("http")
+        .host("localhost")
+        .port(8080)
+        .path("get")
+        .path("one")
+        .query("name", "kpp")
+        .query("name", "kpp2")
+        .query("name1", "kpp1")
         .ok();
 ```
 
@@ -129,12 +145,11 @@ final Res res=OK.of()
 - upload上传
 ```java
 final Res ok = OK.of()
-        .post()
-        .url("http://localhost:80/post_upload_file")
-        .multipart()
-        .file("introduce", "introduce.txt", Files.readAllBytes(Paths.get("d:\\introduce.txt")))
-        .form("a", "b")
-        .ok();
+    .multipart()
+    .url("http://localhost:80/post_upload_file")
+    .file("introduce", "introduce.txt", Files.readAllBytes(Paths.get("d:\\k.txt")))
+    .form("a", "b")
+    .ok();
 ```
 
 - dow下载

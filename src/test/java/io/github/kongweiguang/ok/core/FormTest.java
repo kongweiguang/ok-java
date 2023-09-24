@@ -10,6 +10,7 @@ public class FormTest {
     void testForm() {
         final Res ok = OK.of()
                 .post()
+                .url("http://localhost:80/post_form")
                 .form("a", "1")
                 .form(new HashMap<String, String>() {{
                     put("b", "2");
