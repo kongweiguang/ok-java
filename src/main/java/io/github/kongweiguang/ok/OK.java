@@ -67,7 +67,7 @@ public final class OK {
     private Charset charset = StandardCharsets.UTF_8;
     private Method method = Method.GET;
 
-    private Map<String, String> form = new HashMap<>();
+    private final Map<String, String> form = new HashMap<>();
     private final MultiValueMap<String, String> query = new MultiValueMap<>();
     private final Map<String, String> cookie = new HashMap<>();
     private final List<String> paths = new ArrayList<>();

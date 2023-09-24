@@ -78,13 +78,13 @@ final Res res=OK.of()
 - form表单请求
 ```java
 final Res ok = OK.of()
-.post()
-.url("http://localhost:80/post_form")
-.form("a", "1")
-.form(new HashMap<String, String>() {{
-put("b", "2");
-}})
-.ok();
+        .post()
+        .url("http://localhost:80/post_form")
+        .form("a", "1")
+        .form(new HashMap<String, String>() {{
+             put("b", "2");
+        }})
+        .ok();
 ```
 
 - 构建url
