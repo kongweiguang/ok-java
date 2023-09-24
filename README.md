@@ -34,18 +34,18 @@ Maven
 <dependency>
     <groupId>io.github.kongweiguang</groupId>
     <artifactId>OK</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 </dependency>
 ```
 
 Gradle
 ```xml
-implementation group: 'io.github.kongweiguang', name: 'OK', version: '0.0.3'
+implementation group: 'io.github.kongweiguang', name: 'OK', version: '0.0.4'
 ```
 
 Gradle-Kotlin
 ```xml
-implementation("io.github.kongweiguang:OK:0.0.3")
+implementation("io.github.kongweiguang:OK:0.0.4")
 ```
 
 
@@ -154,12 +154,16 @@ final Res ok = OK.of()
 
 - dow下载
 ```java
-final Res res = OK.of()
-        .get()
-        .url("http://localhost:80/get_file")
-        .ok();
+final Res ok = OK.of()
+    .get()
+    .url("http://localhost:80/get_file")
+    .ok();
 
-res.file("d:\\k.txt");
+    try {
+        ok.file("d:\\k.txt");
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
 ```
 
 - ws请求

@@ -15,7 +15,11 @@ public class DowTest {
                 .url("http://localhost:80/get_file")
                 .ok();
 
-        ok.file("d:\\k.txt");
+        try {
+            ok.file("d:\\k.txt");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

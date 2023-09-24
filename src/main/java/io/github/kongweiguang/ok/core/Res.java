@@ -9,14 +9,13 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -129,12 +128,8 @@ public final class Res {
         }.type());
     }
 
-    public void file(String path) {
-        try (OutputStream outputStream = Files.newOutputStream(Paths.get(path))) {
-            outputStream.write(bytes());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public void file(String path, OpenOption... options) throws IOException {
+        Files.write(Paths.get(path), bytes(), options);
     }
 
 
