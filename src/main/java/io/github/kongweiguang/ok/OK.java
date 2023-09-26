@@ -17,6 +17,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -73,7 +74,7 @@ public final class OK {
     private final List<String> paths = new ArrayList<>();
 
     private boolean multipart = false;
-    private final MultipartBody.Builder mul = new MultipartBody.Builder().setType(MultipartBody.FORM);
+    private final MultipartBody.Builder mul = new MultipartBody.Builder();
 
     //async
     private boolean async = false;
@@ -203,7 +204,7 @@ public final class OK {
 
         if (HttpMethod.permitsRequestBody(method().name())) {
             if (this.multipart) {
-                rb = mul().build();
+                rb = mul().setType(MediaType.parse(contentType() + ";charset=" + charset().name())).build();
             } else if (nonNull(formBody())) {
                 rb = formBody();
             } else {

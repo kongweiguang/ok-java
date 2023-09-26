@@ -19,7 +19,7 @@ public final class ReqBody extends RequestBody {
 
     public ReqBody(String contentType, Charset charset, byte[] bytes) {
         this.cs = charset;
-        this.mt = MediaType.parse(contentType);
+        this.mt = MediaType.parse(contentType + ";charset=" + charset);
         this.bt = bytes;
     }
 
