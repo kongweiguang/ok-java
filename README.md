@@ -24,30 +24,34 @@
 
 ### 特点
 
-* 轻量
+* 非常轻量，代码简单，大小只有12k
 * api友好，用的很爽
 * 链式编程
 
 ### 使用方式
+
 Maven
+
 ```xml
+
 <dependency>
     <groupId>io.github.kongweiguang</groupId>
     <artifactId>OK</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 
 Gradle
+
 ```xml
-implementation group: 'io.github.kongweiguang', name: 'OK', version: '0.0.4'
+implementation group: 'io.github.kongweiguang', name: 'OK', version: '0.0.5'
 ```
 
 Gradle-Kotlin
-```xml
-implementation("io.github.kongweiguang:OK:0.0.4")
-```
 
+```xml
+implementation("io.github.kongweiguang:OK:0.0.5")
+```
 
 ### 例子
 
@@ -76,32 +80,33 @@ final Res res=OK.of()
 ```
 
 - form表单请求
+
 ```java
-final Res ok = OK.of()
+final Res ok=OK.of()
         .post()
         .url("http://localhost:80/post_form")
-        .form("a", "1")
-        .form(new HashMap<String, String>() {{
-             put("b", "2");
+        .form("a","1")
+        .form(new HashMap<String, String>(){{
+        put("b","2");
         }})
         .ok();
 ```
 
 - 构建url
+
 ```java
-final Res res = OK.of()
+final Res res=OK.of()
         .get()
         .scheme("http")
         .host("localhost")
         .port(8080)
         .path("get")
         .path("one")
-        .query("name", "kpp")
-        .query("name", "kpp2")
-        .query("name1", "kpp1")
+        .query("name","kpp")
+        .query("name","kpp2")
+        .query("name1","kpp1")
         .ok();
 ```
-
 
 - async异步请求
 
@@ -133,37 +138,39 @@ final Res res=OK.of()
         .url("http://localhost:80/get_string")
         .query("a","1")
         .retry(3,Duration.ofSeconds(2),(r,t)->{
-            final String str=r.str();
-            if(str.length()>10){
-                return true;
-            }
-            return false;
+final String str=r.str();
+        if(str.length()>10){
+        return true;
+        }
+        return false;
         })
         .ok();
 ```
 
 - upload上传
+
 ```java
-final Res ok = OK.of()
-    .multipart()
-    .url("http://localhost:80/post_upload_file")
-    .file("introduce", "introduce.txt", Files.readAllBytes(Paths.get("d:\\k.txt")))
-    .form("a", "b")
-    .ok();
+final Res ok=OK.of()
+        .multipart()
+        .url("http://localhost:80/post_upload_file")
+        .file("introduce","introduce.txt",Files.readAllBytes(Paths.get("d:\\k.txt")))
+        .form("a","b")
+        .ok();
 ```
 
 - dow下载
-```java
-final Res ok = OK.of()
-    .get()
-    .url("http://localhost:80/get_file")
-    .ok();
 
-    try {
+```java
+final Res ok=OK.of()
+        .get()
+        .url("http://localhost:80/get_file")
+        .ok();
+
+        try{
         ok.file("d:\\k.txt");
-    } catch (IOException e) {
+        }catch(IOException e){
         throw new RuntimeException(e);
-    }
+        }
 ```
 
 - ws请求
@@ -173,10 +180,10 @@ final Res res=OK.of()
         .ws()
         .url("ws://websocket/test")
         .listener(new WebSocketListener(){
-            @Override
-            public void onMessage(@NotNull final WebSocket webSocket,@NotNull final String text){
-                    System.out.println("text = "+text);
-            }
+@Override
+public void onMessage(@NotNull final WebSocket webSocket,@NotNull final String text){
+        System.out.println("text = "+text);
+        }
         })
         .ok();
 ```
@@ -194,7 +201,7 @@ final List<String> list=res.list();
 final Map<String, String> map=res.map();
 final JSONObject jsonObject=res.jsonObj();
 final InputStream stream=res.stream();
-res.file("d:\\k.txt");
+        res.file("d:\\k.txt");
 final Integer i=res.rInt();
 final Boolean b=res.rBool();
 

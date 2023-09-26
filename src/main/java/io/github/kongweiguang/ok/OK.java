@@ -187,7 +187,7 @@ public final class OK {
     private void addForm() {
         if (this.multipart) {
             form().forEach(mul()::addFormDataPart);
-        } else if (nonNull(form())) {
+        } else if (!form().isEmpty()) {
             final FormBody.Builder b = new FormBody.Builder(charset());
             form().forEach(b::addEncoded);
             this.formBody = b.build();
