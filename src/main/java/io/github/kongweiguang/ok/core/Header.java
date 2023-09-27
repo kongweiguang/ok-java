@@ -10,25 +10,31 @@
  * See the Mulan PSL v2 for more details.
  */
 
-package io.github.kongweiguang.ok.mate;
+package io.github.kongweiguang.ok.core;
 
 /**
- * http中Method涉及到的常量
+ * Header中涉及到的常量
  *
  * @author kongweiguang
  */
-public enum Method {
-    GET,
-    POST,
-    DELETE,
-    PUT,
-    PATCH,
-    HEAD,
-    OPTIONS,
-    TRACE,
-    CONNECT,
+public enum Header {
+    authorization("Authorization"),
+    content_type("Content-Type"),
+    user_agent("User-Agent"),
+    cookie("Cookie");
 
-    ;
+    private final String v;
 
+    Header(final String v) {
+        this.v = v;
+    }
 
+    public String v() {
+        return v;
+    }
+
+    @Override
+    public String toString() {
+        return v();
+    }
 }

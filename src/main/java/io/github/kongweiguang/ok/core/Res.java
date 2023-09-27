@@ -2,7 +2,6 @@ package io.github.kongweiguang.ok.core;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import io.github.kongweiguang.ok.util.TypeRef;
 import kotlin.Pair;
 import okhttp3.Headers;
 import okhttp3.Response;

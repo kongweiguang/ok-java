@@ -2,7 +2,6 @@ package io.github.kongweiguang.ok.core;
 
 import com.alibaba.fastjson2.JSONObject;
 import io.github.kongweiguang.ok.OK;
-import io.github.kongweiguang.ok.util.TypeRef;
 import okhttp3.Response;
 import org.junit.jupiter.api.Test;
 

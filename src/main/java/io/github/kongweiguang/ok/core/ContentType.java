@@ -1,4 +1,4 @@
-package io.github.kongweiguang.ok.mate;
+package io.github.kongweiguang.ok.core;
 
 
 /**

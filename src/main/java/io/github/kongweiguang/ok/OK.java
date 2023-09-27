@@ -2,17 +2,17 @@ package io.github.kongweiguang.ok;
 
 
 import com.alibaba.fastjson2.JSON;
+import io.github.kongweiguang.ok.core.Const;
+import io.github.kongweiguang.ok.core.ContentType;
+import io.github.kongweiguang.ok.core.Header;
+import io.github.kongweiguang.ok.core.Method;
 import io.github.kongweiguang.ok.core.ReqBody;
+import io.github.kongweiguang.ok.core.ReqType;
 import io.github.kongweiguang.ok.core.Res;
 import io.github.kongweiguang.ok.core.Retry;
 import io.github.kongweiguang.ok.core.Timeout;
 import io.github.kongweiguang.ok.core.TimeoutInterceptor;
-import io.github.kongweiguang.ok.mate.Const;
-import io.github.kongweiguang.ok.mate.ContentType;
-import io.github.kongweiguang.ok.mate.Header;
-import io.github.kongweiguang.ok.mate.Method;
-import io.github.kongweiguang.ok.mate.ReqType;
-import io.github.kongweiguang.ok.util.MultiValueMap;
+import io.github.kongweiguang.ok.core.MultiValueMap;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;

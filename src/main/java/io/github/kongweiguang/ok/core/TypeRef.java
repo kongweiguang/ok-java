@@ -1,4 +1,4 @@
-package io.github.kongweiguang.ok.util;
+package io.github.kongweiguang.ok.core;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
