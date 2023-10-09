@@ -44,7 +44,7 @@ Maven
 Gradle
 
 ```xml
-implementation group: 'io.github.kongweiguang', name: 'OK', version: '0.0.5'
+implementation 'io.github.kongweiguang:OK:0.0.7'
 ```
 
 Gradle-Kotlin
