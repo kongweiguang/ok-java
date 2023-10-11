@@ -51,7 +51,7 @@ import static java.util.Objects.nonNull;
  */
 public final class OK {
 
-    private static final OkHttpClient default_c = new OkHttpClient.Builder()
+    public static final OkHttpClient default_c = new OkHttpClient.Builder()
             .connectTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
