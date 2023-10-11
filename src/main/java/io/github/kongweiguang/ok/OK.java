@@ -93,7 +93,7 @@ public final class OK {
     //ws
     private WebSocketListener listener;
 
-    private ReqType typeEnum = ReqType.http;
+    private ReqType typeEnum;
 
 
     private OK(OkHttpClient c) {
@@ -101,6 +101,7 @@ public final class OK {
         this.builder = new Request.Builder();
         this.charset = StandardCharsets.UTF_8;
         this.method = Method.GET;
+        this.typeEnum = ReqType.http;
     }
 
     public static OK of() {
