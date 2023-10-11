@@ -27,6 +27,4 @@ public class Util {
         return url;
     }
 
-    public static void main(String[] args) {
-    }
 }
