@@ -61,14 +61,14 @@ public final class OK {
     private final OkHttpClient C;
     private final Request.Builder builder;
     private String scheme;
-    private String host = Const.localhost;
-    private int port = Const.port;
+    private String host;
+    private int port;
     private URL url;
     private String reqBody;
     private RequestBody formBody;
     private String contentType;
-    private Charset charset = StandardCharsets.UTF_8;
-    private Method method = Method.GET;
+    private Charset charset;
+    private Method method;
 
     private Map<String, String> form;
     private MultiValueMap<String, String> query;
@@ -98,6 +98,8 @@ public final class OK {
     private OK(OkHttpClient c) {
         this.C = c;
         this.builder = new Request.Builder();
+        this.charset = StandardCharsets.UTF_8;
+        this.method = Method.GET;
     }
 
     public static OK of() {
