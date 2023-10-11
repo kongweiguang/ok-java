@@ -14,18 +14,16 @@ import java.nio.charset.Charset;
  */
 public final class ReqBody extends RequestBody {
     private final MediaType mt;
-    private final Charset cs;
     private final byte[] bt;
 
     public ReqBody(String contentType, Charset charset, byte[] bytes) {
-        this.cs = charset;
         this.mt = MediaType.parse(contentType + ";charset=" + charset);
+        this.mt.charset(charset);
         this.bt = bytes;
     }
 
     @Override
     public MediaType contentType() {
-        this.mt.charset(this.cs);
         return this.mt;
     }
 

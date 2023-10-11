@@ -13,6 +13,7 @@ import io.github.kongweiguang.ok.core.Res;
 import io.github.kongweiguang.ok.core.Retry;
 import io.github.kongweiguang.ok.core.Timeout;
 import io.github.kongweiguang.ok.core.TimeoutInterceptor;
+import io.github.kongweiguang.ok.core.Util;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -27,12 +28,13 @@ import okhttp3.WebSocketListener;
 import okhttp3.internal.http.HttpMethod;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
@@ -58,33 +60,33 @@ public final class OK {
 
     private final OkHttpClient C;
     private final Request.Builder builder;
-    private String scheme = Const.http;
+    private String scheme;
     private String host = Const.localhost;
-    private int port;
-    private String url;
+    private int port = Const.port;
+    private URL url;
     private String reqBody;
     private RequestBody formBody;
     private String contentType;
     private Charset charset = StandardCharsets.UTF_8;
     private Method method = Method.GET;
 
-    private final Map<String, String> form = new HashMap<>();
-    private final MultiValueMap<String, String> query = new MultiValueMap<>();
-    private final Map<String, String> cookie = new HashMap<>();
-    private final List<String> paths = new ArrayList<>();
+    private Map<String, String> form;
+    private MultiValueMap<String, String> query;
+    private Map<String, String> cookie;
+    private LinkedList<String> paths;
 
-    private boolean multipart = false;
-    private final MultipartBody.Builder mul = new MultipartBody.Builder();
+    private boolean multipart;
+    private MultipartBody.Builder mul;
 
     //async
-    private boolean async = false;
+    private boolean async;
     private Consumer<Res> success;
     private Consumer<IOException> fail;
 
     //retry
-    private boolean retry = false;
+    private boolean retry;
     private int max;
-    private Duration delay = Duration.ofSeconds(1);
+    private Duration delay;
     private BiPredicate<Res, Throwable> predicate;
 
     //ws
@@ -115,7 +117,7 @@ public final class OK {
         bf();
         if (req()) {
             if (retry()) {
-                return Retry.predicate(this::http0, this.predicate)
+                return Retry.predicate(this::http0, predicate)
                         .maxAttempts(max())
                         .delay(delay())
                         .execute()
@@ -149,25 +151,41 @@ public final class OK {
     }
 
     private void addQuery() {
-        final HttpUrl.Builder urlBuilder = new HttpUrl.Builder();
-
-        if (!query().map().isEmpty()) {
-            query().map().forEach((k, v) ->
-                    v.forEach(e -> urlBuilder.addEncodedQueryParameter(k, e))
-            );
-        }
 
         if (nonNull(url())) {
-            builder().url(url());
-        } else {
-            paths().forEach(urlBuilder::addPathSegments);
+            scheme(url().getProtocol());
+            host(url().getHost());
+            port(url().getPort() == -1 ? Const.port : url().getPort());
+            pathFirst(url().getPath());
 
-            urlBuilder.scheme(scheme());
-            urlBuilder.host(host());
-            urlBuilder.port(port());
+            if (nonNull(url().getQuery())) {
+                for (String part : url().getQuery().split("&")) {
+                    String[] keyValue = part.split("=");
+                    if (keyValue.length > 1) {
+                        query(keyValue[0], keyValue[1]);
+                    }
+                }
 
-            builder().url(urlBuilder.build());
+            }
         }
+
+        final HttpUrl.Builder ub = new HttpUrl.Builder();
+
+        if (!query().map().isEmpty()) {
+            query()
+                    .map()
+                    .forEach((k, v) ->
+                            v.forEach(e -> ub.addEncodedQueryParameter(k, e))
+                    );
+        }
+
+        paths().forEach(ub::addPathSegments);
+
+        ub.scheme(scheme());
+        ub.host(host());
+        ub.port(port());
+
+        builder().url(ub.build());
     }
 
     private void addCookie() {
@@ -187,10 +205,12 @@ public final class OK {
 
     private void addForm() {
         if (this.multipart) {
+            contentType(ContentType.multipart);
             form().forEach(mul()::addFormDataPart);
         } else if (!form().isEmpty()) {
             final FormBody.Builder b = new FormBody.Builder(charset());
             form().forEach(b::addEncoded);
+            contentType(ContentType.form_urlencoded);
             this.formBody = b.build();
         }
     }
@@ -203,8 +223,8 @@ public final class OK {
         RequestBody rb = null;
 
         if (HttpMethod.permitsRequestBody(method().name())) {
-            if (this.multipart) {
-                rb = mul().setType(MediaType.parse(contentType() + ";charset=" + charset().name())).build();
+            if (multipart) {
+                rb = mul().setType(MediaType.parse(ContentType.multipart.v() + ";charset=" + charset().name())).build();
             } else if (nonNull(formBody())) {
                 rb = formBody();
             } else {
@@ -215,27 +235,30 @@ public final class OK {
     }
 
     private Res http0() {
-        if (this.async) {
+        if (async) {
             client().newCall(builder().build()).enqueue(new Callback() {
                 @Override
                 public void onFailure(final Call call, final IOException e) {
-                    if (nonNull(fail)) {
-                        fail.accept(e);
+                    if (nonNull(OK.this.fail())) {
+                        OK.this.fail().accept(e);
                     }
+
                     call.cancel();
                 }
 
                 @Override
                 public void onResponse(final Call call, final Response response) throws IOException {
-                    if (nonNull(success)) {
-                        success.accept(Res.of(response));
+                    if (nonNull(OK.this.success())) {
+                        OK.this.success().accept(Res.of(response));
                     }
+
                     call.cancel();
                 }
             });
 
             return null;
         } else {
+
             try (Response execute = client().newCall(builder().build()).execute()) {
                 return Res.of(execute);
             } catch (Exception e) {
@@ -254,7 +277,10 @@ public final class OK {
 
     public OK timeout(int connectTimeoutSeconds, int writeTimeoutSeconds, int readTimeoutSeconds) {
         if (connectTimeoutSeconds > 0) {
-            builder().tag(Timeout.class, new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds));
+            builder().tag(
+                    Timeout.class,
+                    new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds)
+            );
         }
 
         return this;
@@ -262,11 +288,6 @@ public final class OK {
 
     public OK userAgent(final String ua) {
         builder().header(Header.user_agent.v(), ua);
-        return this;
-    }
-
-    public OK charset(final String charset) {
-        this.charset = Charset.forName(charset);
         return this;
     }
 
@@ -293,7 +314,7 @@ public final class OK {
     }
 
     public OK cookie(final String k, final String v) {
-        if (nonNull(k) || nonNull(v)) {
+        if (isNull(k) || isNull(v)) {
             return this;
         }
 
@@ -307,6 +328,15 @@ public final class OK {
             cookie().putAll(cookies);
         }
 
+        return this;
+    }
+
+    public OK contentType(final ContentType contentType) {
+        if (isNull(contentType)) {
+            return this;
+        }
+
+        this.contentType = contentType.v();
         return this;
     }
 
@@ -339,7 +369,11 @@ public final class OK {
     }
 
     public OK url(final String url) {
-        this.url = url;
+        try {
+            this.url = new URL(Util.urlRegex(url));
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
         return this;
     }
 
@@ -394,17 +428,32 @@ public final class OK {
         return this;
     }
 
-    public OK path(final String path) {
-        paths().add(path);
-        return this;
-    }
-
     public OK multipart() {
         this.method = Method.POST;
         this.multipart = true;
-        this.contentType = ContentType.multipart.v();
+        contentType(ContentType.multipart);
         return this;
     }
+
+    public OK path(final String path) {
+        if (isNull(path)) {
+            return this;
+        }
+
+        paths().add(Util.replacePath(path));
+        return this;
+    }
+
+
+    public OK pathFirst(final String path) {
+        if (isNull(path)) {
+            return this;
+        }
+
+        paths().addFirst(Util.replacePath(path));
+        return this;
+    }
+
 
     public OK file(String key, String fileName, byte[] bytes) {
         mul().addFormDataPart(key, fileName, new ReqBody(contentType(), charset(), bytes));
@@ -421,24 +470,19 @@ public final class OK {
         return this;
     }
 
-    public OK raw(final String raw) {
-        this.reqBody = raw;
-        return this;
+    public OK body(final String json) {
+        return body(json, ContentType.json);
     }
 
-    public OK json(final String json) {
-        this.contentType = ContentType.json.v();
-        this.reqBody = json;
-        return this;
+    public OK body(final Object json) {
+        return body(json, ContentType.json);
     }
 
-
-    public OK json(final Object json) {
-        this.contentType = ContentType.json.v();
+    public OK body(final Object json, final ContentType contentType) {
+        contentType(contentType);
         this.reqBody = JSON.toJSONString(json);
         return this;
     }
-
 
     //async
     public OK async() {
@@ -460,10 +504,7 @@ public final class OK {
 
     //retry
     public OK retry(int max) {
-        this.retry = true;
-        this.max = max;
-        this.predicate = (r, e) -> true;
-        return this;
+        return retry(max, Duration.ofSeconds(1), (r, e) -> true);
     }
 
     public OK retry(int max, Duration delay, BiPredicate<Res, Throwable> predicate) {
@@ -497,7 +538,7 @@ public final class OK {
         return port;
     }
 
-    public String url() {
+    public URL url() {
         return url;
     }
 
@@ -518,18 +559,34 @@ public final class OK {
     }
 
     public Map<String, String> form() {
+        if (isNull(form)) {
+            form = new HashMap<>();
+        }
+
         return form;
     }
 
     public MultiValueMap<String, String> query() {
+        if (isNull(query)) {
+            query = new MultiValueMap<>();
+        }
+
         return query;
     }
 
     public Map<String, String> cookie() {
+        if (isNull(this.cookie)) {
+            cookie = new HashMap<>();
+        }
+
         return cookie;
     }
 
-    public List<String> paths() {
+    public LinkedList<String> paths() {
+        if (isNull(paths)) {
+            paths = new LinkedList<>();
+        }
+
         return paths;
     }
 
@@ -538,6 +595,9 @@ public final class OK {
     }
 
     public MultipartBody.Builder mul() {
+        if (isNull(mul)) {
+            mul = new MultipartBody.Builder();
+        }
         return mul;
     }
 

@@ -6,7 +6,7 @@
 
     <groupId>io.github.kongweiguang</groupId>
     <artifactId>OK</artifactId>
-    <version>0.0.7</version>
+    <version>0.0.8</version>
 
 
     <name>${project.artifactId}</name>
@@ -38,6 +38,13 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.kongweiguang</groupId>
+            <artifactId>KHTTP</artifactId>
+            <version>0.0.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -35,7 +35,8 @@ public class RestTest {
         final Res res = OK.of()
                 .post()
                 .url("http://localhost:80/post_json")
-                .json(new HashMap<String, Object>() {{
+                .query("b", "b")
+                .body(new HashMap<String, Object>() {{
                     put("a", "1");
                     put("b", "2");
                     put("c", "3");
@@ -44,6 +45,20 @@ public class RestTest {
         System.out.println("res = " + res.str());
     }
 
+    @Test
+    void testPostQuery() {
+        final Res res = OK.of()
+                .post()
+                .url("http://localhost:8080/post_query")
+                .path("a")
+                .path("b/c")
+                .query("b", "b")
+                .body(new HashMap<String, Object>() {{
+                    put("a", "1");
+                }})
+                .ok();
+        System.out.println("res = " + res.str());
+    }
 
     @Test
     void testList() {
@@ -53,7 +68,6 @@ public class RestTest {
                 .ok();
         System.out.println("res = " + res.list());
     }
-
 
 
 }

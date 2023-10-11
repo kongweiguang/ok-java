@@ -70,13 +70,17 @@ final Res res=OK.of()
 - post请求
 
 ```java
-final Res res=OK.of()
-        .get()
-        .url("http://localhost:80/get_json")
-        .query("a","1")
-        .query("b","2")
-        .query("c","3")
+ final Res res = OK.of()
+        .post()
+        .url("http://localhost:80/post_json")
+        .query("b", "b")
+        .body(new HashMap<String, Object>() {{
+            put("a", "1");
+            put("b", "2");
+            put("c", "3");
+        }})
         .ok();
+        System.out.println("res = " + res.str());
 ```
 
 - form表单请求
