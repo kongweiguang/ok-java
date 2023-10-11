@@ -26,6 +26,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.WebSocketListener;
 import okhttp3.internal.http.HttpMethod;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -240,7 +241,7 @@ public final class OK {
         if (async) {
             client().newCall(builder().build()).enqueue(new Callback() {
                 @Override
-                public void onFailure(final Call call, final IOException e) {
+                public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
                     if (nonNull(OK.this.fail())) {
                         OK.this.fail().accept(e);
                     }
@@ -249,9 +250,9 @@ public final class OK {
                 }
 
                 @Override
-                public void onResponse(final Call call, final Response response) throws IOException {
+                public void onResponse(@NotNull final Call call, @NotNull final Response res) throws IOException {
                     if (nonNull(OK.this.success())) {
-                        OK.this.success().accept(Res.of(response));
+                        OK.this.success().accept(Res.of(res));
                     }
 
                     call.cancel();
