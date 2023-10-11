@@ -20,8 +20,6 @@
 <hr />
 
 
-参考solon-cloud-httputils，hutool，forest按照自己的编码习惯封装的建议轻量http客户端工具
-
 ### 特点
 
 * 非常轻量，代码简单，大小只有12k
@@ -37,20 +35,20 @@ Maven
 <dependency>
     <groupId>io.github.kongweiguang</groupId>
     <artifactId>OK</artifactId>
-    <version>0.0.5</version>
+    <version>0.0.8</version>
 </dependency>
 ```
 
 Gradle
 
 ```xml
-implementation 'io.github.kongweiguang:OK:0.0.7'
+implementation 'io.github.kongweiguang:OK:0.0.8'
 ```
 
 Gradle-Kotlin
 
 ```xml
-implementation("io.github.kongweiguang:OK:0.0.5")
+implementation("io.github.kongweiguang:OK:0.0.8")
 ```
 
 ### 例子
