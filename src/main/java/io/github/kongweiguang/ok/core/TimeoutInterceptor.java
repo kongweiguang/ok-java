@@ -2,6 +2,7 @@ package io.github.kongweiguang.ok.core;
 
 import okhttp3.Interceptor;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +19,7 @@ public final class TimeoutInterceptor implements Interceptor {
     }
 
 
+    @NotNull
     @Override
     public Response intercept(Chain chain) throws IOException {
 
