@@ -482,9 +482,9 @@ public final class OK {
         return body(JSON.toJSONString(json), ContentType.json);
     }
 
-    public OK body(final Object obj, final ContentType contentType) {
+    public OK body(final String obj, final ContentType contentType) {
         contentType(contentType);
-        this.reqBody = obj.toString();
+        this.reqBody = obj;
         return this;
     }
 
