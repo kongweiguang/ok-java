@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
+import static java.lang.Thread.sleep;
 import static java.util.Objects.nonNull;
 
 /**
@@ -15,7 +16,7 @@ import static java.util.Objects.nonNull;
  *
  * @param <T> 任务结果类型
  * @author kongweiguang
- * @since 6.0.0
+ * @since 0.0.1
  */
 public class Retry<T> {
 
@@ -193,7 +194,7 @@ public class Retry<T> {
             }
 
             try {
-                Thread.sleep(delay.toMillis());
+                sleep(delay.toMillis());
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
