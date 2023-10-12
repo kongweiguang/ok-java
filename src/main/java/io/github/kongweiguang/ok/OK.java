@@ -37,6 +37,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -151,7 +152,7 @@ public final class OK {
         addQuery();
         addForm();
         addCookie();
-        switchM();
+        addMethod();
     }
 
     private void addQuery() {
@@ -175,13 +176,12 @@ public final class OK {
 
         final HttpUrl.Builder ub = new HttpUrl.Builder();
 
-        if (!query().map().isEmpty()) {
-            query()
-                    .map()
-                    .forEach((k, v) ->
-                            v.forEach(e -> ub.addEncodedQueryParameter(k, e))
-                    );
-        }
+        Optional.ofNullable(query)
+                .map(MultiValueMap::map)
+                .ifPresent(map -> map.forEach((k, v) ->
+                        v.forEach(e -> ub.addEncodedQueryParameter(k, e)))
+                );
+
 
         paths().forEach(ub::addPathSegments);
 
@@ -193,7 +193,7 @@ public final class OK {
     }
 
     private void addCookie() {
-        if (!cookie().isEmpty()) {
+        if (nonNull(cookie)) {
             builder().addHeader(Header.cookie.v(), cookie2Str(cookie()));
         }
     }
@@ -208,10 +208,10 @@ public final class OK {
 
 
     private void addForm() {
-        if (this.multipart) {
+        if (multipart) {
             contentType(ContentType.multipart);
             form().forEach(mul()::addFormDataPart);
-        } else if (!form().isEmpty()) {
+        } else if (nonNull(form)) {
             final FormBody.Builder b = new FormBody.Builder(charset());
             form().forEach(b::addEncoded);
             contentType(ContentType.form_urlencoded);
@@ -219,7 +219,7 @@ public final class OK {
         }
     }
 
-    private void switchM() {
+    private void addMethod() {
         builder().method(method().name(), addBody());
     }
 
@@ -290,15 +290,6 @@ public final class OK {
         return this;
     }
 
-    public OK userAgent(final String ua) {
-        builder().header(Header.user_agent.v(), ua);
-        return this;
-    }
-
-    public OK charset(final Charset charset) {
-        this.charset = charset;
-        return this;
-    }
 
     public OK headers(final Map<String, String> headers) {
         if (nonNull(headers)) {
@@ -344,6 +335,23 @@ public final class OK {
         return this;
     }
 
+
+    public OK charset(final Charset charset) {
+        this.charset = charset;
+        return this;
+    }
+
+    public OK ua(final String ua) {
+        builder().header(Header.user_agent.v(), ua);
+        return this;
+    }
+
+
+    public OK auth(final String auth) {
+        builder().header(Header.authorization.v(), auth);
+        return this;
+    }
+
     public OK query(final String k, final String v) {
         query().put(k, v);
         return this;
@@ -378,6 +386,25 @@ public final class OK {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
+        return this;
+    }
+
+    public OK path(final String path) {
+        if (isNull(path)) {
+            return this;
+        }
+
+        paths().add(Util.replacePath(path));
+        return this;
+    }
+
+
+    public OK pathFirst(final String path) {
+        if (isNull(path)) {
+            return this;
+        }
+
+        paths().addFirst(Util.replacePath(path));
         return this;
     }
 
@@ -439,27 +466,9 @@ public final class OK {
         return this;
     }
 
-    public OK path(final String path) {
-        if (isNull(path)) {
-            return this;
-        }
-
-        paths().add(Util.replacePath(path));
-        return this;
-    }
-
-
-    public OK pathFirst(final String path) {
-        if (isNull(path)) {
-            return this;
-        }
-
-        paths().addFirst(Util.replacePath(path));
-        return this;
-    }
-
 
     public OK file(String key, String fileName, byte[] bytes) {
+        contentType(ContentType.multipart);
         mul().addFormDataPart(key, fileName, new ReqBody(contentType(), charset(), bytes));
         return this;
     }
@@ -517,6 +526,22 @@ public final class OK {
         this.delay = delay;
         this.predicate = predicate;
         return this;
+    }
+
+
+    //ws
+    public OK listener(WebSocketListener listener) {
+        this.listener = listener;
+        return this;
+    }
+
+    public OK ws() {
+        this.typeEnum = ReqType.ws;
+        return this;
+    }
+
+    private void ws0() {
+        client().newWebSocket(builder().build(), listener());
     }
 
 
@@ -579,7 +604,7 @@ public final class OK {
     }
 
     public Map<String, String> cookie() {
-        if (isNull(this.cookie)) {
+        if (isNull(cookie)) {
             cookie = new HashMap<>();
         }
 
@@ -637,19 +662,5 @@ public final class OK {
         return listener;
     }
 
-    //ws
-    public OK listener(WebSocketListener listener) {
-        this.listener = listener;
-        return this;
-    }
-
-    public OK ws() {
-        this.typeEnum = ReqType.ws;
-        return this;
-    }
-
-    private void ws0() {
-        client().newWebSocket(builder().build(), listener());
-    }
 
 }
