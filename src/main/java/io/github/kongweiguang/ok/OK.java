@@ -479,12 +479,12 @@ public final class OK {
     }
 
     public OK body(final Object json) {
-        return body(json, ContentType.json);
+        return body(JSON.toJSONString(json), ContentType.json);
     }
 
-    public OK body(final Object json, final ContentType contentType) {
+    public OK body(final Object obj, final ContentType contentType) {
         contentType(contentType);
-        this.reqBody = JSON.toJSONString(json);
+        this.reqBody = obj.toString();
         return this;
     }
 
