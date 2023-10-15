@@ -78,7 +78,6 @@ final Res res=OK.of()
             put("c", "3");
         }})
         .ok();
-        System.out.println("res = " + res.str());
 ```
 
 - form表单请求
@@ -89,7 +88,7 @@ final Res ok=OK.of()
         .url("http://localhost:80/post_form")
         .form("a","1")
         .form(new HashMap<String, String>(){{
-        put("b","2");
+             put("b","2");
         }})
         .ok();
 ```
@@ -140,11 +139,11 @@ final Res res=OK.of()
         .url("http://localhost:80/get_string")
         .query("a","1")
         .retry(3,Duration.ofSeconds(2),(r,t)->{
-final String str=r.str();
-        if(str.length()>10){
-        return true;
-        }
-        return false;
+            final String str=r.str();
+            if(str.length()>10){
+                return true;
+            }
+            return false;
         })
         .ok();
 ```
@@ -169,9 +168,9 @@ final Res ok=OK.of()
         .ok();
 
         try{
-        ok.file("d:\\k.txt");
+            ok.file("d:\\k.txt");
         }catch(IOException e){
-        throw new RuntimeException(e);
+            throw new RuntimeException(e);
         }
 ```
 
@@ -203,9 +202,9 @@ final List<String> list=res.list();
 final Map<String, String> map=res.map();
 final JSONObject jsonObject=res.jsonObj();
 final InputStream stream=res.stream();
-        res.file("d:\\k.txt");
 final Integer i=res.rInt();
 final Boolean b=res.rBool();
+res.file("d:\\k.txt");
 
 //响应头
 final String ok=res.header("ok");

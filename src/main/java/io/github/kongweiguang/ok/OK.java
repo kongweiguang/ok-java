@@ -163,15 +163,16 @@ public final class OK {
             port(url().getPort() == -1 ? Const.port : url().getPort());
             pathFirst(url().getPath());
 
-            if (nonNull(url().getQuery())) {
-                for (String part : url().getQuery().split("&")) {
-                    String[] keyValue = part.split("=");
-                    if (keyValue.length > 1) {
-                        query(keyValue[0], keyValue[1]);
-                    }
-                }
-
-            }
+            Optional.ofNullable(url().getQuery())
+                    .map(e -> e.split("&"))
+                    .ifPresent(qr -> {
+                        for (String part : qr) {
+                            String[] kv = part.split("=");
+                            if (kv.length > 1) {
+                                query(kv[0], kv[1]);
+                            }
+                        }
+                    });
         }
 
         final HttpUrl.Builder ub = new HttpUrl.Builder();
@@ -212,9 +213,9 @@ public final class OK {
             contentType(ContentType.multipart);
             form().forEach(mul()::addFormDataPart);
         } else if (nonNull(form)) {
+            contentType(ContentType.form_urlencoded);
             final FormBody.Builder b = new FormBody.Builder(charset());
             form().forEach(b::addEncoded);
-            contentType(ContentType.form_urlencoded);
             this.formBody = b.build();
         }
     }
@@ -350,6 +351,10 @@ public final class OK {
     public OK auth(final String auth) {
         builder().header(Header.authorization.v(), auth);
         return this;
+    }
+
+    public OK bearer(final String token) {
+        return auth("Bearer " + token);
     }
 
     public OK query(final String k, final String v) {
