@@ -1,7 +1,7 @@
 package io.github.kongweiguang.ok.core;
 
 
-import io.github.kongweiguang.ok.OK;
+import io.github.kongweiguang.ok.Req;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 public class AsyncTest {
     @Test
     void test() {
-        final Res res = OK.of()
+        final Res res = Req.of()
                 .async()
                 .get()
                 .url("https://localhost:80/get")

@@ -1,6 +1,7 @@
 package io.github.kongweiguang.ok.ws;
 
-import io.github.kongweiguang.ok.OK;
+import io.github.kongweiguang.ok.Req;
+import io.github.kongweiguang.ok.WS;
 import io.github.kongweiguang.ok.core.Res;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
@@ -11,7 +12,7 @@ public class SendTest {
     @Test
     void test() {
 
-        final Res ok = OK.of()
+        final Res ok = WS.of()
                 .ws()
                 .url("ws://websocket/test")
                 .listener(new WebSocketListener() {

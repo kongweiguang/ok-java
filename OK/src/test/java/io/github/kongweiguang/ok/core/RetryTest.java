@@ -1,6 +1,6 @@
 package io.github.kongweiguang.ok.core;
 
-import io.github.kongweiguang.ok.OK;
+import io.github.kongweiguang.ok.Req;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
@@ -8,7 +8,7 @@ import java.time.Duration;
 public class RetryTest {
     @Test
     void testRetry() {
-        final Res res = OK.of()
+        final Res res = Req.of()
                 .get()
                 .url("http://localhost:80/get_string")
                 .query("a", "1")

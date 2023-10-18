@@ -1,6 +1,6 @@
 package io.github.kongweiguang.ok.core;
 
-import io.github.kongweiguang.ok.OK;
+import io.github.kongweiguang.ok.Req;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.HashMap;
 public class RestTest {
     @Test
     void testGet() {
-        final Res res = OK.of()
+        final Res res = Req.of()
                 .get()
                 .url("http://localhost:80/get_string")
                 .query("a", "1")
@@ -20,7 +20,7 @@ public class RestTest {
 
     @Test
     void testGetJson() {
-        final Res res = OK.of()
+        final Res res = Req.of()
                 .get()
                 .url("http://localhost:80/get_json")
                 .query("a", "1")
@@ -32,7 +32,7 @@ public class RestTest {
 
     @Test
     void testPost() {
-        final Res res = OK.of()
+        final Res res = Req.of()
                 .post()
                 .url("http://localhost:80/post_json")
                 .query("b", "b")
@@ -47,7 +47,7 @@ public class RestTest {
 
     @Test
     void testPostQuery() {
-        final Res res = OK.of()
+        final Res res = Req.of()
                 .post()
                 .url("http://localhost:8080/post_query")
                 .path("a")
@@ -62,7 +62,7 @@ public class RestTest {
 
     @Test
     void testList() {
-        final Res res = OK.of()
+        final Res res = Req.of()
                 .get()
                 .url("http://localhost:80/get_list")
                 .ok();

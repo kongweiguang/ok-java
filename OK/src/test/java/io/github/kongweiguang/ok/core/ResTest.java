@@ -1,7 +1,7 @@
 package io.github.kongweiguang.ok.core;
 
 import com.alibaba.fastjson2.JSONObject;
-import io.github.kongweiguang.ok.OK;
+import io.github.kongweiguang.ok.Req;
 import okhttp3.Response;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +12,7 @@ import java.util.Map;
 public class ResTest {
     @Test
     void testRes() {
-        final Res res = OK.of()
+        final Res res = Req.of()
                 .get()
                 .url("http://localhost:80/get_string")
                 .query("a", "1")

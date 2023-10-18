@@ -1,6 +1,6 @@
 package io.github.kongweiguang.ok.core;
 
-import io.github.kongweiguang.ok.OK;
+import io.github.kongweiguang.ok.Req;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 public class DowTest {
     @Test
     void testDow() {
-        final Res ok = OK.of()
+        final Res ok = Req.of()
                 .get()
                 .url("http://localhost:80/get_file")
                 .ok();
@@ -24,7 +24,7 @@ public class DowTest {
 
     @Test
     void testUp() throws IOException {
-        final Res ok = OK.of()
+        final Res ok = Req.of()
                 .multipart()
                 .url("http://localhost:80/post_upload_file")
                 .file("introduce", "introduce.txt", Files.readAllBytes(Paths.get("d:\\k.txt")))

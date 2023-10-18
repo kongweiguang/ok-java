@@ -1,6 +1,6 @@
 package io.github.kongweiguang.ok.core;
 
-import io.github.kongweiguang.ok.OK;
+import io.github.kongweiguang.ok.Req;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.HashMap;
 public class FormTest {
     @Test
     void testForm() {
-        final Res ok = OK.of()
+        final Res ok = Req.of()
                 .post()
                 .url("http://localhost:80/post_form")
                 .form("a", "1")

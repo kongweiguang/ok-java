@@ -1,12 +1,12 @@
 package io.github.kongweiguang.ok.core;
 
-import io.github.kongweiguang.ok.OK;
+import io.github.kongweiguang.ok.Req;
 import org.junit.jupiter.api.Test;
 
 public class UrlTest {
     @Test
     void test1() {
-        final Res res = OK.of()
+        final Res res = Req.of()
                 .get()
                 .scheme("http")
                 .host("localhost")
