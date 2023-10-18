@@ -2,6 +2,7 @@ package io.github.kongweiguang.ok;
 
 
 import com.alibaba.fastjson2.JSON;
+import io.github.kongweiguang.ok.core.BaseHttp;
 import io.github.kongweiguang.ok.core.Const;
 import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
@@ -12,7 +13,6 @@ import io.github.kongweiguang.ok.core.ReqType;
 import io.github.kongweiguang.ok.core.Res;
 import io.github.kongweiguang.ok.core.Retry;
 import io.github.kongweiguang.ok.core.Timeout;
-import io.github.kongweiguang.ok.core.TimeoutInterceptor;
 import io.github.kongweiguang.ok.core.Util;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -38,7 +38,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
@@ -50,14 +49,7 @@ import static java.util.Objects.nonNull;
  *
  * @author kongweiguang
  */
-public final class OK {
-
-    public static final OkHttpClient default_c = new OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .addInterceptor(TimeoutInterceptor.of)
-            .build();
+public class OK implements BaseHttp<OK> {
 
 
     private final OkHttpClient C;
@@ -97,7 +89,7 @@ public final class OK {
     private ReqType typeEnum;
 
 
-    private OK(OkHttpClient c) {
+    protected OK(OkHttpClient c) {
         this.C = c;
         this.builder = new Request.Builder();
         this.charset = StandardCharsets.UTF_8;
