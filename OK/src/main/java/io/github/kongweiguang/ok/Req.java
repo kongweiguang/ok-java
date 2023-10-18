@@ -82,6 +82,7 @@ public class Req implements BaseHttp<Req> {
 
 
     private Req() {
+        this.headers = new HashMap<>();
         this.charset = StandardCharsets.UTF_8;
         this.method = Method.GET;
         this.typeEnum = ReqType.http;
@@ -89,6 +90,10 @@ public class Req implements BaseHttp<Req> {
 
     public static Req of() {
         return new Req();
+    }
+
+    public Res ok() {
+        return OK.of().ok(this);
     }
 
 
@@ -113,7 +118,7 @@ public class Req implements BaseHttp<Req> {
     //header
     public Req headers(final Map<String, String> headers) {
         if (nonNull(headers)) {
-            headers.putAll(headers);
+            headers().putAll(headers);
         }
 
         return this;
@@ -162,13 +167,13 @@ public class Req implements BaseHttp<Req> {
     }
 
     public Req ua(final String ua) {
-        headers.put(Header.user_agent.v(), ua);
+        headers().put(Header.user_agent.v(), ua);
         return this;
     }
 
 
     public Req auth(final String auth) {
-        headers.put(Header.authorization.v(), auth);
+        headers().put(Header.authorization.v(), auth);
         return this;
     }
 
@@ -312,7 +317,6 @@ public class Req implements BaseHttp<Req> {
         return this;
     }
 
-
     //body
     public Req body(final String json) {
         return body(json, ContentType.json);
@@ -366,13 +370,14 @@ public class Req implements BaseHttp<Req> {
         return this;
     }
 
+
     public Req ws() {
         this.typeEnum = ReqType.ws;
         return this;
     }
 
-    //get
 
+    //get
 
     public String scheme() {
         return scheme;
@@ -438,9 +443,6 @@ public class Req implements BaseHttp<Req> {
         return paths;
     }
 
-    public boolean retry() {
-        return retry;
-    }
 
     public MultipartBody.Builder mul() {
         if (isNull(mul)) {
@@ -481,14 +483,23 @@ public class Req implements BaseHttp<Req> {
         return listener;
     }
 
-
-    //
-    public OK http() {
-        return null;
+    public Timeout timeout() {
+        return timeout;
     }
 
-    public WS ws1() {
-        return null;
+    public Map<String, String> headers() {
+        return headers;
     }
 
+    public boolean isAsync() {
+        return async;
+    }
+
+    public boolean isMultipart() {
+        return multipart;
+    }
+
+    public boolean isRetry() {
+        return retry;
+    }
 }

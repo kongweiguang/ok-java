@@ -29,7 +29,7 @@ import static java.util.Objects.nonNull;
 
 public class OK {
 
-    protected OkHttpClient default_c = new OkHttpClient.Builder()
+    protected static final OkHttpClient default_c = new OkHttpClient.Builder()
             .connectTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
@@ -47,9 +47,8 @@ public class OK {
     }
 
 
-    public Res ok(Req req) {
-        this.req = req;
-        return null;
+    public static OK of() {
+        return new OK(default_c);
     }
 
 
@@ -58,7 +57,8 @@ public class OK {
      *
      * @return Res {@code  Res}
      */
-    public Res ok() {
+    public Res ok(Req req) {
+        this.req = req;
         return ojbk();
     }
 
@@ -85,7 +85,7 @@ public class OK {
     private Res ojbk() {
         bf();
         if (reqType()) {
-            if (req().retry()) {
+            if (req().isRetry()) {
                 return Retry.predicate(this::http0, req().predicate())
                         .maxAttempts(req().max())
                         .delay(req().delay())
@@ -100,7 +100,7 @@ public class OK {
     }
 
     private Res http0() {
-        if (req().async) {
+        if (req().isAsync()) {
             client().newCall(builder().build()).enqueue(new Callback() {
                 @Override
                 public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
@@ -138,7 +138,7 @@ public class OK {
         if (nonNull(req().url())) {
             req().scheme(req().url().getProtocol());
             req().host(req().url().getHost());
-            req().port(req().url().getPort() == -1 ? Const.port :req(). url().getPort());
+            req().port(req().url().getPort() == -1 ? Const.port : req().url().getPort());
             req().pathFirst(req().url().getPath());
 
             Optional.ofNullable(req().url().getQuery())
@@ -155,7 +155,7 @@ public class OK {
 
         final HttpUrl.Builder ub = new HttpUrl.Builder();
 
-        Optional.ofNullable(query)
+        Optional.ofNullable(req().query())
                 .map(MultiValueMap::map)
                 .ifPresent(map -> map.forEach((k, v) ->
                         v.forEach(e -> ub.addEncodedQueryParameter(k, e)))
@@ -173,13 +173,13 @@ public class OK {
 
 
     private void addForm() {
-        if (req().multipart) {
-            contentType(ContentType.multipart);
-            form().forEach(mul()::addFormDataPart);
+        if (req().isMultipart()) {
+            req().contentType(ContentType.multipart);
+            req(). form().forEach(req().mul()::addFormDataPart);
         } else if (nonNull(form)) {
-            contentType(ContentType.form_urlencoded);
+            req().contentType(ContentType.form_urlencoded);
             final FormBody.Builder b = new FormBody.Builder(charset());
-            form().forEach(b::addEncoded);
+            req().form().forEach(b::addEncoded);
             this.formBody = b.build();
         }
     }
