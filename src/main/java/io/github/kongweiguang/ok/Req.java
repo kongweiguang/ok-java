@@ -12,11 +12,14 @@ import io.github.kongweiguang.ok.core.ReqType;
 import io.github.kongweiguang.ok.core.Res;
 import io.github.kongweiguang.ok.core.Timeout;
 import io.github.kongweiguang.ok.core.Util;
+import io.github.kongweiguang.ok.sse.SSEListener;
+import io.github.kongweiguang.ok.ws.WSListener;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.WebSocketListener;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -38,6 +41,7 @@ import static java.util.Objects.nonNull;
  */
 public class Req implements BaseHttp<Req> {
 
+    private ReqType typeEnum;
 
     //header
     private Method method;
@@ -76,9 +80,10 @@ public class Req implements BaseHttp<Req> {
     private BiPredicate<Res, Throwable> predicate;
 
     //ws
-    private WebSocketListener listener;
+    private WSListener wsListener;
 
-    private ReqType typeEnum;
+    //sse
+    private SSEListener sseListener;
 
 
     private Req() {
@@ -352,7 +357,7 @@ public class Req implements BaseHttp<Req> {
 
     //retry
     public Req retry(int max) {
-        return retry(max, Duration.ofSeconds(1), (r, e) -> true);
+        return retry(max, Duration.ofSeconds(1), (r, e) -> HttpURLConnection.HTTP_OK != r.status());
     }
 
     public Req retry(int max, Duration delay, BiPredicate<Res, Throwable> predicate) {
@@ -365,20 +370,30 @@ public class Req implements BaseHttp<Req> {
 
 
     //ws
-    public Req listener(WebSocketListener listener) {
-        this.listener = listener;
-        return this;
-    }
-
-
     public Req ws() {
         this.typeEnum = ReqType.ws;
         return this;
     }
 
+    public Req listener(final WSListener listener) {
+        this.wsListener = listener;
+        return this;
+    }
+
+
+    //sse
+    public Req sse() {
+        this.typeEnum = ReqType.sse;
+        return this;
+    }
+
+    public Req sseListener(final SSEListener sseListener) {
+        this.sseListener = sseListener;
+        return this;
+    }
+
 
     //get
-
     public String scheme() {
         return scheme;
     }
@@ -479,9 +494,6 @@ public class Req implements BaseHttp<Req> {
         return predicate;
     }
 
-    public WebSocketListener listener() {
-        return listener;
-    }
 
     public Timeout timeout() {
         return timeout;
@@ -489,6 +501,14 @@ public class Req implements BaseHttp<Req> {
 
     public Map<String, String> headers() {
         return headers;
+    }
+
+    public WebSocketListener wsListener() {
+        return wsListener;
+    }
+
+    public SSEListener sseListener() {
+        return sseListener;
     }
 
     public boolean isAsync() {

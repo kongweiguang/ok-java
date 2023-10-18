@@ -18,6 +18,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.internal.http.HttpMethod;
+import okhttp3.sse.EventSources;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -40,6 +41,9 @@ public class OK {
     protected final OkHttpClient C;
     protected final Request.Builder builder;
     private Req req;
+
+    //sse
+
 
     public OK(final OkHttpClient c) {
         this.C = c;
@@ -70,8 +74,10 @@ public class OK {
                 ws0();
                 break;
             case sse:
+                sse0();
                 break;
         }
+
         return false;
     }
 
@@ -83,7 +89,10 @@ public class OK {
     }
 
     private Res ojbk() {
+        builder().tag(Req.class, req());
+
         bf();
+
         if (reqType()) {
             if (req().isRetry()) {
                 return Retry.predicate(this::http0, req().predicate())
@@ -96,6 +105,7 @@ public class OK {
                 return http0();
             }
         }
+
         return null;
     }
 
@@ -175,7 +185,7 @@ public class OK {
     private void addForm() {
         if (req().isMultipart()) {
             req().contentType(ContentType.multipart);
-            req(). form().forEach(req().mul()::addFormDataPart);
+            req().form().forEach(req().mul()::addFormDataPart);
         } else if (nonNull(form)) {
             req().contentType(ContentType.form_urlencoded);
             final FormBody.Builder b = new FormBody.Builder(charset());
@@ -200,20 +210,20 @@ public class OK {
 
 
     private void addMethod() {
-        builder().method(method().name(), addBody());
+        builder().method(req().method().name(), addBody());
     }
 
 
     private RequestBody addBody() {
         RequestBody rb = null;
 
-        if (HttpMethod.permitsRequestBody(method().name())) {
-            if (multipart) {
-                rb = mul().setType(MediaType.parse(ContentType.multipart.v() + ";charset=" + charset().name())).build();
+        if (HttpMethod.permitsRequestBody(req().method().name())) {
+            if (req().isMultipart()) {
+                rb = req().mul().setType(MediaType.parse(ContentType.multipart.v() + ";charset=" + req().charset().name())).build();
             } else if (nonNull(formBody())) {
                 rb = formBody();
             } else {
-                rb = new ReqBody(contentType(), charset(), reqBody().getBytes(charset()));
+                rb = new ReqBody(req().contentType(), req().charset(), req().reqBody().getBytes(req().charset()));
             }
         }
         return rb;
@@ -221,7 +231,15 @@ public class OK {
 
 
     private void ws0() {
-        client().newWebSocket(builder().build(), req.listener());
+        client().newWebSocket(builder().build(), req().wsListener());
+    }
+
+    private void sse0() {
+        EventSources.createFactory(client())
+                .newEventSource(
+                        builder().build(),
+                        req().sseListener().client(client())
+                );
     }
 
 

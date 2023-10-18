@@ -7,16 +7,10 @@
     <groupId>io.github.kongweiguang</groupId>
     <artifactId>OK_Java</artifactId>
     <version>${version}</version>
-    <packaging>pom</packaging>
-
 
     <name>${project.artifactId}</name>
     <description>Java project for OK</description>
     <url>https://github.com/kongweiguang</url>
-    <modules>
-        <module>OK-SSE</module>
-        <module>OK</module>
-    </modules>
 
 
     <properties>
@@ -31,6 +25,19 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-sse</artifactId>
+            <version>${okhttp.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
+
+
         <!--test-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -42,7 +49,7 @@
         <dependency>
             <groupId>io.github.kongweiguang</groupId>
             <artifactId>KHTTP</artifactId>
-            <version>0.1</version>
+            <version>0.0.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -50,36 +57,7 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>io.github.kongweiguang</groupId>
-                <artifactId>OK</artifactId>
-                <version>${version}</version>
-            </dependency>
 
-            <dependency>
-                <groupId>io.github.kongweiguang</groupId>
-                <artifactId>OK-SSE</artifactId>
-                <version>${version}</version>
-            </dependency>
-
-
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${okhttp.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp-sse</artifactId>
-                <version>${okhttp.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.alibaba.fastjson2</groupId>
-                <artifactId>fastjson2</artifactId>
-                <version>${fastjson.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
