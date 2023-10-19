@@ -2,7 +2,6 @@ package io.github.kongweiguang.ok;
 
 
 import com.alibaba.fastjson2.JSON;
-import io.github.kongweiguang.ok.core.BaseHttp;
 import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.Method;
@@ -39,7 +38,7 @@ import static java.util.Objects.nonNull;
  *
  * @author kongweiguang
  */
-public class Req implements BaseHttp<Req> {
+public class Req {
 
     private ReqType typeEnum;
 
@@ -58,8 +57,7 @@ public class Req implements BaseHttp<Req> {
     private MultiValueMap<String, String> query;
 
     //body
-    private String reqBody;
-    private RequestBody formBody;
+    private String strBody;
     private String contentType;
     private Charset charset;
 
@@ -134,7 +132,7 @@ public class Req implements BaseHttp<Req> {
             return this;
         }
 
-        headers.put(name, value);
+        headers().put(name, value);
         return this;
     }
 
@@ -162,6 +160,8 @@ public class Req implements BaseHttp<Req> {
         }
 
         this.contentType = contentType.v();
+
+        header(Header.content_type.name(), String.join(";charset=", contentType(), charset().name()));
         return this;
     }
 
@@ -333,7 +333,7 @@ public class Req implements BaseHttp<Req> {
 
     public Req body(final String obj, final ContentType contentType) {
         contentType(contentType);
-        this.reqBody = obj;
+        this.strBody = obj;
         return this;
     }
 
@@ -410,8 +410,8 @@ public class Req implements BaseHttp<Req> {
         return url;
     }
 
-    public String reqBody() {
-        return reqBody;
+    public String strBody() {
+        return strBody;
     }
 
     public String contentType() {
@@ -517,6 +517,10 @@ public class Req implements BaseHttp<Req> {
 
     public boolean isMultipart() {
         return multipart;
+    }
+
+    public boolean isForm() {
+        return nonNull(form);
     }
 
     public boolean isRetry() {

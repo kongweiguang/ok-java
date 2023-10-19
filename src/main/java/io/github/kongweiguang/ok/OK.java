@@ -4,7 +4,6 @@ import io.github.kongweiguang.ok.core.Const;
 import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.MultiValueMap;
-import io.github.kongweiguang.ok.core.ReqBody;
 import io.github.kongweiguang.ok.core.Res;
 import io.github.kongweiguang.ok.core.Retry;
 import io.github.kongweiguang.ok.core.TimeoutInterceptor;
@@ -28,6 +27,9 @@ import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.nonNull;
 
+/**
+ * 发送请求
+ */
 public class OK {
 
     protected static final OkHttpClient default_c = new OkHttpClient.Builder()
@@ -42,10 +44,8 @@ public class OK {
     protected final Request.Builder builder;
     private Req req;
 
-    //sse
 
-
-    public OK(final OkHttpClient c) {
+    private OK(final OkHttpClient c) {
         this.C = c;
         this.builder = new Request.Builder();
     }
@@ -55,6 +55,10 @@ public class OK {
         return new OK(default_c);
     }
 
+
+    public static OK of(OkHttpClient c) {
+        return new OK(c);
+    }
 
     /**
      * 发送请求
@@ -81,17 +85,11 @@ public class OK {
         return false;
     }
 
-    private void bf() {
-        addQuery();
-        addForm();
-        addCookie();
-        addMethod();
-    }
 
     private Res ojbk() {
-        builder().tag(Req.class, req());
-
         bf();
+
+        builder().tag(Req.class, req());
 
         if (reqType()) {
             if (req().isRetry()) {
@@ -133,7 +131,6 @@ public class OK {
 
             return null;
         } else {
-
             try (Response execute = client().newCall(builder().build()).execute()) {
                 return Res.of(execute);
             } catch (Exception e) {
@@ -142,14 +139,20 @@ public class OK {
         }
     }
 
+    private void bf() {
+        addQuery();
+        addHeader();
+        addMethod();
+    }
 
     private void addQuery() {
 
         if (nonNull(req().url())) {
-            req().scheme(req().url().getProtocol());
-            req().host(req().url().getHost());
-            req().port(req().url().getPort() == -1 ? Const.port : req().url().getPort());
-            req().pathFirst(req().url().getPath());
+            req()
+                    .scheme(req().url().getProtocol())
+                    .host(req().url().getHost())
+                    .port(req().url().getPort() == -1 ? Const.port : req().url().getPort())
+                    .pathFirst(req().url().getPath());
 
             Optional.ofNullable(req().url().getQuery())
                     .map(e -> e.split("&"))
@@ -182,21 +185,14 @@ public class OK {
     }
 
 
-    private void addForm() {
-        if (req().isMultipart()) {
-            req().contentType(ContentType.multipart);
-            req().form().forEach(req().mul()::addFormDataPart);
-        } else if (nonNull(form)) {
-            req().contentType(ContentType.form_urlencoded);
-            final FormBody.Builder b = new FormBody.Builder(charset());
-            req().form().forEach(b::addEncoded);
-            this.formBody = b.build();
-        }
-    }
+    private void addHeader() {
 
-    private void addCookie() {
-        if (nonNull(cookie)) {
-            builder().addHeader(Header.cookie.v(), cookie2Str(cookie()));
+        if (!req().headers().isEmpty()) {
+            req().headers().forEach(builder()::addHeader);
+        }
+
+        if (!req().cookie().isEmpty()) {
+            builder().addHeader(Header.cookie.v(), cookie2Str(req().cookie()));
         }
     }
 
@@ -219,13 +215,39 @@ public class OK {
 
         if (HttpMethod.permitsRequestBody(req().method().name())) {
             if (req().isMultipart()) {
-                rb = req().mul().setType(MediaType.parse(ContentType.multipart.v() + ";charset=" + req().charset().name())).build();
-            } else if (nonNull(formBody())) {
-                rb = formBody();
+                //multipart 格式提交
+                req()
+                        .contentType(ContentType.multipart)
+                        .form()
+                        .forEach(req().mul()::addFormDataPart);
+
+                rb = req()
+                        .mul()
+                        .setType(MediaType.parse(req().contentType()))
+                        .build();
+
+            } else if (req().isForm()) {
+                final FormBody.Builder b = new FormBody.Builder(req().charset());
+
+                //form_urlencoded 格式提交
+                req()
+                        .contentType(ContentType.form_urlencoded)
+                        .form()
+                        .forEach(b::addEncoded);
+
+                rb = b.build();
+
             } else {
-                rb = new ReqBody(req().contentType(), req().charset(), req().reqBody().getBytes(req().charset()));
+                //字符串提交
+                rb = RequestBody.create(
+                        req().strBody(),
+                        MediaType.parse(req().contentType())
+                );
+
+//                rb = new ReqBody(req().contentType(), req().charset(), req().reqBody().getBytes(req().charset()));
             }
         }
+
         return rb;
     }
 
@@ -238,7 +260,7 @@ public class OK {
         EventSources.createFactory(client())
                 .newEventSource(
                         builder().build(),
-                        req().sseListener().client(client())
+                        req().sseListener()
                 );
     }
 
