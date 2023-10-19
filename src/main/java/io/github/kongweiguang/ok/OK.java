@@ -6,7 +6,7 @@ import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.MultiValueMap;
 import io.github.kongweiguang.ok.core.Res;
-import io.github.kongweiguang.ok.core.Retry;
+import io.github.kongweiguang.ok.core.Util;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -21,8 +21,12 @@ import okhttp3.sse.EventSources;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiPredicate;
 
 import static java.util.Objects.nonNull;
 
@@ -35,7 +39,7 @@ public class OK {
     private final OkHttpClient C;
     private final Request.Builder builder;
     private Req req;
-
+    private final CompletableFuture<Res> resFuture = new CompletableFuture<>();
 
     private OK(final OkHttpClient c) {
         this.C = c;
@@ -52,7 +56,12 @@ public class OK {
      *
      * @return Res {@code  Res}
      */
-    public Res ok(Req req) {
+    public Res ok(final Req req) {
+        this.req = req;
+        return ojbk().join();
+    }
+
+    public CompletableFuture<Res> okAsync(final Req req) {
         this.req = req;
         return ojbk();
     }
@@ -73,59 +82,79 @@ public class OK {
     }
 
 
-    private Res ojbk() {
+    private CompletableFuture<Res> ojbk() {
         bf();
 
         builder().tag(Req.class, req());
 
         if (reqType()) {
-
-            if (req().isRetry()) {
-                return Retry.predicate(this::http0, req().predicate())
-                        .maxAttempts(req().max())
-                        .delay(req().delay())
-                        .execute()
-                        .get()
-                        .orElse(null);
-            } else {
-                return http0();
-            }
+            return http0(new AtomicInteger(req().max()), req().delay(), req().predicate());
         }
 
         return null;
     }
 
-    private Res http0() {
+    private CompletableFuture<Res> http0(AtomicInteger max, Duration duration, BiPredicate<Res, Throwable> predicate) {
+
         if (req().isAsync()) {
-            client().newCall(builder().build()).enqueue(new Callback() {
-                @Override
-                public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
-                    if (nonNull(req().fail())) {
-                        req().fail().accept(e);
-                    }
+            client().newCall(builder().build())
+                    .enqueue(new Callback() {
+                        @Override
+                        public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
+                            if (nonNull(req().fail())) {
+                                req().fail().accept(e);
+                            }
 
-                    call.cancel();
-                }
+                            res(max, duration, predicate.test(null, e), predicate, null);
 
-                @Override
-                public void onResponse(@NotNull final Call call, @NotNull final Response res) throws IOException {
-                    if (nonNull(req().success())) {
-                        req().success().accept(Res.of(res));
-                    }
+                            call.cancel();
+                        }
 
-                    call.cancel();
-                }
-            });
+                        @Override
+                        public void onResponse(@NotNull final Call call, @NotNull final Response res) throws IOException {
+                            final Res r = Res.of(res);
+                            res().complete(r);
+                            if (nonNull(req().success())) {
+                                req().success().accept(r);
+                            }
+
+                            res(max, duration, predicate.test(r, null), predicate, null);
+
+                            call.cancel();
+                        }
+                    });
 
             return null;
         } else {
             try (Response execute = client().newCall(builder().build()).execute()) {
-                return Res.of(execute);
+                final Res res = Res.of(execute);
+                return res(max, duration, predicate.test(res, null), predicate, res);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                return res(max, duration, predicate, e);
             }
         }
+
     }
+
+    private CompletableFuture<Res> res(final AtomicInteger max, final Duration duration, final BiPredicate<Res, Throwable> predicate, final Exception e) {
+        if (req().isRetry() && max.getAndDecrement() > 0 && predicate.test(null, e)) {
+            Util.sleep(duration.toMillis());
+            return http0(max, duration, predicate);
+        } else {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private CompletableFuture<Res> res(final AtomicInteger max, final Duration duration, final boolean predicate, final BiPredicate<Res, Throwable> pre, final Res res) {
+        if (req().isRetry() && max.getAndDecrement() > 0 && predicate) {
+            Util.sleep(duration.toMillis());
+            return http0(max, duration, pre);
+        }
+
+        res().complete(res);
+        return res();
+    }
+
 
     private void bf() {
         addQuery();
@@ -136,8 +165,7 @@ public class OK {
     private void addQuery() {
 
         if (nonNull(req().url())) {
-            req()
-                    .scheme(req().url().getProtocol())
+            req().scheme(req().url().getProtocol())
                     .host(req().url().getHost())
                     .port(req().url().getPort() == -1 ? Const.port : req().url().getPort())
                     .pathFirst(req().url().getPath());
@@ -264,5 +292,9 @@ public class OK {
 
     private Req req() {
         return req;
+    }
+
+    private CompletableFuture<Res> res() {
+        return resFuture;
     }
 }

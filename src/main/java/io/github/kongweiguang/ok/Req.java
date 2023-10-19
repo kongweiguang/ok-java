@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
@@ -73,9 +74,14 @@ public class Req {
 
     //retry
     private boolean retry;
-    private int max;
+    private int max = 1;
     private Duration delay;
-    private BiPredicate<Res, Throwable> predicate;
+    private BiPredicate<Res, Throwable> predicate = (r, e) -> {
+        if (nonNull(r)) {
+            return HttpURLConnection.HTTP_OK != r.status();
+        }
+        return true;
+    };
 
     //ws
     private WSListener wsListener;
@@ -97,6 +103,11 @@ public class Req {
 
     public Res ok() {
         return OK.of().ok(this);
+    }
+
+    public CompletableFuture<Res> okAsync() {
+        this.async = true;
+        return OK.of().okAsync(this);
     }
 
 
@@ -338,11 +349,6 @@ public class Req {
     }
 
     //async
-    public Req async() {
-        this.async = true;
-        return this;
-    }
-
     public Req success(final Consumer<Res> success) {
         this.success = success;
         return this;
@@ -357,12 +363,7 @@ public class Req {
 
     //retry
     public Req retry(int max) {
-        return retry(max, Duration.ofSeconds(1), (r, e) -> {
-            if (nonNull(r)) {
-                return HttpURLConnection.HTTP_OK != r.status();
-            }
-            return false;
-        });
+        return retry(max, Duration.ofSeconds(1), predicate());
     }
 
     public Req retry(int max, Duration delay, BiPredicate<Res, Throwable> predicate) {

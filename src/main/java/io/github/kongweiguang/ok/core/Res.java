@@ -50,6 +50,7 @@ public final class Res {
         this.res = response;
     }
 
+
     public static Res of(final Response response) {
         return new Res(response);
     }
