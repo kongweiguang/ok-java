@@ -19,9 +19,13 @@ package io.github.kongweiguang.ok.core;
  */
 public enum Header {
     authorization("Authorization"),
+    proxy_authorization("Proxy-Authorization"),
     content_type("Content-Type"),
     user_agent("User-Agent"),
-    cookie("Cookie");
+    cookie("Cookie"),
+
+    ;
+
 
     private final String v;
 

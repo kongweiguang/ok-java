@@ -1,12 +1,12 @@
 package io.github.kongweiguang.ok;
 
+import io.github.kongweiguang.ok.core.Config;
 import io.github.kongweiguang.ok.core.Const;
 import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.MultiValueMap;
 import io.github.kongweiguang.ok.core.Res;
 import io.github.kongweiguang.ok.core.Retry;
-import io.github.kongweiguang.ok.core.TimeoutInterceptor;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -23,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.nonNull;
 
@@ -32,16 +31,9 @@ import static java.util.Objects.nonNull;
  */
 public class OK {
 
-    protected static final OkHttpClient default_c = new OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .addInterceptor(TimeoutInterceptor.of)
-            .build();
 
-
-    protected final OkHttpClient C;
-    protected final Request.Builder builder;
+    private final OkHttpClient C;
+    private final Request.Builder builder;
     private Req req;
 
 
@@ -52,12 +44,7 @@ public class OK {
 
 
     public static OK of() {
-        return new OK(default_c);
-    }
-
-
-    public static OK of(OkHttpClient c) {
-        return new OK(c);
+        return new OK(Config.client());
     }
 
     /**
