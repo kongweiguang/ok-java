@@ -357,7 +357,12 @@ public class Req {
 
     //retry
     public Req retry(int max) {
-        return retry(max, Duration.ofSeconds(1), (r, e) -> HttpURLConnection.HTTP_OK != r.status());
+        return retry(max, Duration.ofSeconds(1), (r, e) -> {
+            if (nonNull(r)) {
+                return HttpURLConnection.HTTP_OK != r.status();
+            }
+            return false;
+        });
     }
 
     public Req retry(int max, Duration delay, BiPredicate<Res, Throwable> predicate) {

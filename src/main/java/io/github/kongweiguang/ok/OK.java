@@ -79,6 +79,7 @@ public class OK {
         builder().tag(Req.class, req());
 
         if (reqType()) {
+
             if (req().isRetry()) {
                 return Retry.predicate(this::http0, req().predicate())
                         .maxAttempts(req().max())
