@@ -14,7 +14,6 @@ import io.github.kongweiguang.ok.core.Util;
 import io.github.kongweiguang.ok.sse.SSEListener;
 import io.github.kongweiguang.ok.ws.WSListener;
 import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
 import okhttp3.WebSocketListener;
 
 import java.io.IOException;
@@ -472,10 +471,6 @@ public class Req {
 
     public Duration delay() {
         return delay;
-    }
-
-    public RequestBody formBody() {
-        return formBody;
     }
 
     public ReqType typeEnum() {
