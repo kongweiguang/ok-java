@@ -76,7 +76,12 @@ public class Req {
     private boolean retry;
     private int max = 1;
     private Duration delay;
-    private BiPredicate<Res, Throwable> predicate;
+    private BiPredicate<Res, Throwable> predicate = (r, e) -> {
+        if (nonNull(r)) {
+            return HttpURLConnection.HTTP_OK != r.status();
+        }
+        return true;
+    };
 
     //ws
     private WSListener wsListener;
@@ -360,13 +365,7 @@ public class Req {
     public Req retry(final int max) {
         return retry(
                 max,
-                Duration.ofSeconds(1),
-                (r, e) -> {
-                    if (nonNull(r)) {
-                        return HttpURLConnection.HTTP_OK != r.status();
-                    }
-                    return true;
-                });
+                Duration.ofSeconds(1), predicate());
     }
 
     public Req retry(final int max, final Duration delay, final BiPredicate<Res, Throwable> predicate) {

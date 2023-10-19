@@ -124,7 +124,7 @@ public class OK {
                         }
                     });
 
-            return null;
+            return res();
         } else {
             try (Response execute = client().newCall(builder().build()).execute()) {
                 final Res res = Res.of(execute);

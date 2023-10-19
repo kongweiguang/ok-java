@@ -4,6 +4,7 @@ import io.github.kongweiguang.ok.Req;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 public class Test1 {
     @Test
@@ -11,14 +12,13 @@ public class Test1 {
         final Req req = Req.of();
         req
                 .get()
-                .async()
-                .url("www.baidu.com1")
+                .url("www.baidu.com")
                 ;
         System.out.println(req);
-        final Res res = req.ok();
+        final CompletableFuture<Res> res = req.okAsync();
         System.out.println(res);
-        final String str = res.str();
-        final int status = res.status();
+        final String str = res.join().str();
+        final int status = res.join().status();
         System.out.println("status = " + status);
         System.out.println(str);
     }
