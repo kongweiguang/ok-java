@@ -47,7 +47,7 @@ public class Req {
     private Method method;
     private Map<String, String> cookie;
     private Timeout timeout;
-    private Map<String, String> headers;
+    private final Map<String, String> headers;
 
     //url
     private URL url;
@@ -76,12 +76,7 @@ public class Req {
     private boolean retry;
     private int max = 1;
     private Duration delay;
-    private BiPredicate<Res, Throwable> predicate = (r, e) -> {
-        if (nonNull(r)) {
-            return HttpURLConnection.HTTP_OK != r.status();
-        }
-        return true;
-    };
+    private BiPredicate<Res, Throwable> predicate;
 
     //ws
     private WSListener wsListener;
@@ -363,7 +358,15 @@ public class Req {
 
     //retry
     public Req retry(int max) {
-        return retry(max, Duration.ofSeconds(1), predicate());
+        return retry(
+                max,
+                Duration.ofSeconds(1),
+                (r, e) -> {
+                    if (nonNull(r)) {
+                        return HttpURLConnection.HTTP_OK != r.status();
+                    }
+                    return true;
+                });
     }
 
     public Req retry(int max, Duration delay, BiPredicate<Res, Throwable> predicate) {
