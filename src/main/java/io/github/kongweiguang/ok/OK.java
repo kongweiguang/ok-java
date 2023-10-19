@@ -52,13 +52,14 @@ public class OK {
     }
 
     /**
-     * 发送请求
+     * <h2>发送请求</h2>
+     * <p>
+     * 只有http请求有返回值，ws和sse没有返回值
      *
      * @return Res {@code  Res}
      */
     public Res ok(final Req req) {
-        this.req = req;
-        return ojbk().join();
+        return okAsync(req).join();
     }
 
     public CompletableFuture<Res> okAsync(final Req req) {
@@ -101,9 +102,12 @@ public class OK {
                     .enqueue(new Callback() {
                         @Override
                         public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
+                            res().completeExceptionally(e);
+
                             if (nonNull(req().fail())) {
                                 req().fail().accept(e);
                             }
+
 
                             res(max, duration, predicate.test(null, e), predicate, null);
 
@@ -114,6 +118,7 @@ public class OK {
                         public void onResponse(@NotNull final Call call, @NotNull final Response res) throws IOException {
                             final Res r = Res.of(res);
                             res().complete(r);
+
                             if (nonNull(req().success())) {
                                 req().success().accept(r);
                             }
