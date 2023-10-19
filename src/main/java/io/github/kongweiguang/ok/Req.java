@@ -357,7 +357,7 @@ public class Req {
 
 
     //retry
-    public Req retry(int max) {
+    public Req retry(final int max) {
         return retry(
                 max,
                 Duration.ofSeconds(1),
@@ -369,7 +369,7 @@ public class Req {
                 });
     }
 
-    public Req retry(int max, Duration delay, BiPredicate<Res, Throwable> predicate) {
+    public Req retry(final int max, final Duration delay, final BiPredicate<Res, Throwable> predicate) {
         this.retry = true;
         this.max = max;
         this.delay = delay;

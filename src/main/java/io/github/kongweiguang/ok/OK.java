@@ -94,7 +94,7 @@ public class OK {
         return null;
     }
 
-    private CompletableFuture<Res> http0(AtomicInteger max, Duration duration, BiPredicate<Res, Throwable> predicate) {
+    private CompletableFuture<Res> http0(final AtomicInteger max, final Duration duration, final BiPredicate<Res, Throwable> predicate) {
 
         if (req().isAsync()) {
             client().newCall(builder().build())
