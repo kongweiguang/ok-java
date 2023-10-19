@@ -14,11 +14,10 @@ public class SendTest {
         final Res ok = Req.of()
                 .ws()
                 .url("ws://websocket/test")
-                .listener(new WebSocketListener() {
+                .listener(new WSListener() {
                     @Override
-                    public void onMessage(@NotNull final WebSocket webSocket, @NotNull final String text) {
+                    public void msg(final Req req, final String text) {
 
-                        System.out.println("text = " + text);
                     }
                 })
                 .ok();

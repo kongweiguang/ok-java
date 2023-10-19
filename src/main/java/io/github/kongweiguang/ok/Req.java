@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
@@ -520,5 +521,14 @@ public class Req {
 
     public boolean isRetry() {
         return retry;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", Req.class.getSimpleName() + "[", "]")
+                .add("method=" + method)
+                .add("url=" + url)
+                .add("strBody='" + strBody + "'")
+                .toString();
     }
 }
