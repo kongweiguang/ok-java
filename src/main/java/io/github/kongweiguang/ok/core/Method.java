@@ -18,17 +18,9 @@ package io.github.kongweiguang.ok.core;
  * @author kongweiguang
  */
 public enum Method {
-    GET,
-    POST,
-    DELETE,
-    PUT,
-    PATCH,
-    HEAD,
-    OPTIONS,
-    TRACE,
-    CONNECT,
+  GET, POST, DELETE, PUT, PATCH, HEAD, OPTIONS, TRACE, CONNECT,
 
-    ;
+  ;
 
 
 }

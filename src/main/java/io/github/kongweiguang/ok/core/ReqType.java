@@ -6,8 +6,6 @@ package io.github.kongweiguang.ok.core;
  * @author kongweiguang
  */
 public enum ReqType {
-    http,
-    ws,
-    sse,
-    ;
+  http, ws, sse,
+  ;
 }

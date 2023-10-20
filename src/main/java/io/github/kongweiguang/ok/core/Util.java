@@ -4,39 +4,39 @@ import static java.util.Objects.isNull;
 
 public final class Util {
 
-    private Util() {
+  private Util() {
+  }
+
+  public static String replacePath(String path) {
+    if (isNull(path)) {
+      return "";
     }
 
-    public static String replacePath(String path) {
-        if (isNull(path)) {
-            return "";
-        }
+    if (path.startsWith("/")) {
+      path = path.replaceFirst("/", "");
+    }
+    return path;
+  }
 
-        if (path.startsWith("/")) {
-            path = path.replaceFirst("/", "");
-        }
-        return path;
+  public static String urlRegex(String url) {
+
+    if (!url.startsWith(Const._http) || !url.startsWith(Const._https)) {
+      if (url.startsWith("/")) {
+        url = Const._http + Const.localhost + url;
+      } else {
+        url = Const._http + url;
+      }
     }
 
-    public static String urlRegex(String url) {
+    return url;
+  }
 
-        if (!url.startsWith(Const._http) || !url.startsWith(Const._https)) {
-            if (url.startsWith("/")) {
-                url = Const._http + Const.localhost + url;
-            } else {
-                url = Const._http + url;
-            }
-        }
+  public static void sleep(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException ignored) {
 
-        return url;
     }
-
-    public static void sleep(long millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException ignored) {
-
-        }
-    }
+  }
 
 }

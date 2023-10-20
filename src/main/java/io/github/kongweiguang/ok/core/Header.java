@@ -18,27 +18,27 @@ package io.github.kongweiguang.ok.core;
  * @author kongweiguang
  */
 public enum Header {
-    authorization("Authorization"),
-    proxy_authorization("Proxy-Authorization"),
-    content_type("Content-Type"),
-    user_agent("User-Agent"),
-    cookie("Cookie"),
+  authorization("Authorization"),
+  proxy_authorization("Proxy-Authorization"),
+  content_type("Content-Type"),
+  user_agent("User-Agent"),
+  cookie("Cookie"),
 
-    ;
+  ;
 
 
-    private final String v;
+  private final String v;
 
-    Header(final String v) {
-        this.v = v;
-    }
+  Header(final String v) {
+    this.v = v;
+  }
 
-    public String v() {
-        return v;
-    }
+  public String v() {
+    return v;
+  }
 
-    @Override
-    public String toString() {
-        return v();
-    }
+  @Override
+  public String toString() {
+    return v();
+  }
 }

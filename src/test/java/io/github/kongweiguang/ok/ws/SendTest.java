@@ -5,19 +5,16 @@ import io.github.kongweiguang.ok.Res;
 import org.junit.jupiter.api.Test;
 
 public class SendTest {
-    @Test
-    void test() {
 
-        final Res ok = Req.of()
-                .ws()
-                .url("ws://websocket/test")
-                .wsListener(new WSListener() {
-                    @Override
-                    public void msg(final Req req, final String text) {
+  @Test
+  void test() {
 
-                    }
-                })
-                .ok();
-    }
+    final Res ok = Req.of().ws().url("ws://websocket/test").wsListener(new WSListener() {
+      @Override
+      public void msg(final Req req, final String text) {
+
+      }
+    }).ok();
+  }
 
 }

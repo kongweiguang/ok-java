@@ -9,13 +9,15 @@ import java.lang.reflect.Type;
  * @author kongweiguang
  */
 public abstract class TypeRef<T> {
-    private final Type type;
 
-    public TypeRef() {
-        this.type = ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-    }
+  private final Type type;
 
-    public Type type() {
-        return type;
-    }
+  public TypeRef() {
+    this.type = ((ParameterizedType) this.getClass()
+        .getGenericSuperclass()).getActualTypeArguments()[0];
+  }
+
+  public Type type() {
+    return type;
+  }
 }
