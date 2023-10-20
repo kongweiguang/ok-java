@@ -1,7 +1,7 @@
 package io.github.kongweiguang.ok.sse;
 
 import io.github.kongweiguang.ok.Req;
-import io.github.kongweiguang.ok.core.Res;
+import io.github.kongweiguang.ok.Res;
 import okhttp3.Response;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;

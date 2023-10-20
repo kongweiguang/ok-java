@@ -1,7 +1,9 @@
-package io.github.kongweiguang.ok.core;
+package io.github.kongweiguang.ok;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import io.github.kongweiguang.ok.core.Header;
+import io.github.kongweiguang.ok.core.TypeRef;
 import kotlin.Pair;
 import okhttp3.Headers;
 import okhttp3.Response;
@@ -39,7 +41,7 @@ public final class Res {
             final ResponseBody body = response.body();
 
             if (isNull(body)) {
-                this.bt = new byte[]{};
+                this.bt = new byte[0];
             } else {
                 this.bt = body.bytes();
             }
@@ -60,22 +62,57 @@ public final class Res {
     }
 
     public int status() {
-        return this.res.code();
+        return res().code();
+    }
+
+    public boolean isOk() {
+        return res().isSuccessful();
     }
 
     public String header(String name) {
-        return this.res.header(name);
+        return res().header(name);
     }
 
     public Map<String, List<String>> headers() {
-        final Headers headers = this.res.headers();
-        final Map<String, List<String>> fr = new LinkedHashMap<>(headers.size(), 1);
-        for (final Pair<? extends String, ? extends String> header : headers) {
-            final List<String> l = fr.computeIfAbsent(header.getFirst(), k -> new ArrayList<>());
-            l.add(header.getSecond());
-        }
-        return fr;
+        final Headers headers = res().headers();
 
+        final Map<String, List<String>> fr = new LinkedHashMap<>(headers.size(), 1);
+
+        for (final Pair<? extends String, ? extends String> hd : headers) {
+            fr.computeIfAbsent(hd.getFirst(), k -> new ArrayList<>())
+                    .add(hd.getSecond());
+        }
+
+        return fr;
+    }
+
+    public Charset charset() {
+        final String header = header(Header.content_type.v());
+        if (isNull(header)) {
+            return null;
+        }
+        return charset0(header);
+    }
+
+    private static Charset charset0(final String contentType) {
+        try {
+            String[] parts = contentType.split(";");
+            if (parts.length > 1) {
+                final String part = parts[1];
+                if (part.startsWith("charset=")) {
+                    return Charset.forName(part.substring("charset=".length()));
+                }
+
+            }
+        } catch (Exception ignored) {
+
+        }
+        return StandardCharsets.UTF_8;
+    }
+
+
+    public long reqMillis() {
+        return res().sentRequestAtMillis();
     }
 
     public byte[] bytes() {
@@ -86,7 +123,7 @@ public final class Res {
         return str(StandardCharsets.UTF_8);
     }
 
-    public String str(Charset charset) {
+    public String str(final Charset charset) {
         return new String(bytes(), charset);
     }
 

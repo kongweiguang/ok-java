@@ -5,7 +5,6 @@ import io.github.kongweiguang.ok.core.Const;
 import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.MultiValueMap;
-import io.github.kongweiguang.ok.core.Res;
 import io.github.kongweiguang.ok.core.Util;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -33,8 +32,7 @@ import static java.util.Objects.nonNull;
 /**
  * 发送请求
  */
-public class OK {
-
+public final class OK {
 
     private final OkHttpClient C;
     private final Request.Builder builder;
@@ -162,9 +160,9 @@ public class OK {
 
 
     private void bf() {
+        addMethod();
         addQuery();
         addHeader();
-        addMethod();
     }
 
     private void addQuery() {
@@ -237,13 +235,11 @@ public class OK {
         if (HttpMethod.permitsRequestBody(req().method().name())) {
             if (req().isMultipart()) {
                 //multipart 格式提交
-                req()
-                        .contentType(ContentType.multipart)
+                req().contentType(ContentType.multipart)
                         .form()
                         .forEach(req().mul()::addFormDataPart);
 
-                rb = req()
-                        .mul()
+                rb = req().mul()
                         .setType(MediaType.parse(req().contentType()))
                         .build();
 
@@ -251,8 +247,7 @@ public class OK {
                 final FormBody.Builder b = new FormBody.Builder(req().charset());
 
                 //form_urlencoded 格式提交
-                req()
-                        .contentType(ContentType.form_urlencoded)
+                req().contentType(ContentType.form_urlencoded)
                         .form()
                         .forEach(b::addEncoded);
 
@@ -265,7 +260,6 @@ public class OK {
                         MediaType.parse(req().contentType())
                 );
 
-//                rb = new ReqBody(req().contentType(), req().charset(), req().reqBody().getBytes(req().charset()));
             }
         }
 

@@ -1,10 +1,7 @@
 package io.github.kongweiguang.ok.ws;
 
 import io.github.kongweiguang.ok.Req;
-import io.github.kongweiguang.ok.core.Res;
-import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
-import org.jetbrains.annotations.NotNull;
+import io.github.kongweiguang.ok.Res;
 import org.junit.jupiter.api.Test;
 
 public class SendTest {

@@ -8,7 +8,6 @@ import io.github.kongweiguang.ok.core.Method;
 import io.github.kongweiguang.ok.core.MultiValueMap;
 import io.github.kongweiguang.ok.core.ReqBody;
 import io.github.kongweiguang.ok.core.ReqType;
-import io.github.kongweiguang.ok.core.Res;
 import io.github.kongweiguang.ok.core.Timeout;
 import io.github.kongweiguang.ok.core.Util;
 import io.github.kongweiguang.ok.sse.SSEListener;
@@ -119,7 +118,6 @@ public class Req {
 
         return this;
     }
-
 
     public Req timeout(int connectTimeoutSeconds, int writeTimeoutSeconds, int readTimeoutSeconds) {
         if (connectTimeoutSeconds > 0) {

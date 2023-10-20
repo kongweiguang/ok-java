@@ -1,6 +1,7 @@
 package io.github.kongweiguang.ok.core;
 
 import io.github.kongweiguang.ok.Req;
+import io.github.kongweiguang.ok.Res;
 import org.junit.jupiter.api.Test;
 
 public class UrlTest {
