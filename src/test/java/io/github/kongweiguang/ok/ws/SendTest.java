@@ -11,7 +11,7 @@ public class SendTest {
         final Res ok = Req.of()
                 .ws()
                 .url("ws://websocket/test")
-                .listener(new WSListener() {
+                .wsListener(new WSListener() {
                     @Override
                     public void msg(final Req req, final String text) {
 

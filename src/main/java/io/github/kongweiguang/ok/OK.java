@@ -39,11 +39,14 @@ public final class OK {
     private Req req;
     private final CompletableFuture<Res> resFuture = new CompletableFuture<>();
 
+    //async
+    private boolean async;
+
+
     private OK(final OkHttpClient c) {
         this.C = c;
         this.builder = new Request.Builder();
     }
-
 
     public static OK of() {
         return new OK(Config.client());
@@ -70,6 +73,7 @@ public final class OK {
      */
     public CompletableFuture<Res> okAsync(final Req req) {
         this.req = req;
+        this.async = true;
         return ojbk();
     }
 
@@ -103,7 +107,7 @@ public final class OK {
 
     private CompletableFuture<Res> http0(final AtomicInteger max, final Duration duration, final BiPredicate<Res, Throwable> predicate) {
 
-        if (req().isAsync()) {
+        if (async) {
             client().newCall(builder().build())
                     .enqueue(new Callback() {
                         @Override

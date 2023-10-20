@@ -6,13 +6,14 @@ import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.Method;
 import io.github.kongweiguang.ok.core.MultiValueMap;
-import io.github.kongweiguang.ok.core.ReqBody;
 import io.github.kongweiguang.ok.core.ReqType;
 import io.github.kongweiguang.ok.core.Timeout;
 import io.github.kongweiguang.ok.core.Util;
 import io.github.kongweiguang.ok.sse.SSEListener;
 import io.github.kongweiguang.ok.ws.WSListener;
+import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.WebSocketListener;
 
 import java.io.IOException;
@@ -44,9 +45,11 @@ public class Req {
 
     //header
     private Method method;
-    private Map<String, String> cookie;
     private Timeout timeout;
     private final Map<String, String> headers;
+    private Map<String, String> cookie;
+    private String contentType;
+    private Charset charset;
 
     //url
     private URL url;
@@ -58,8 +61,6 @@ public class Req {
 
     //body
     private String strBody;
-    private String contentType;
-    private Charset charset;
 
     //form
     private boolean multipart;
@@ -67,7 +68,6 @@ public class Req {
     private MultipartBody.Builder mul;
 
     //async
-    private boolean async;
     private Consumer<Res> success;
     private Consumer<IOException> fail;
 
@@ -75,12 +75,7 @@ public class Req {
     private boolean retry;
     private int max = 1;
     private Duration delay;
-    private BiPredicate<Res, Throwable> predicate = (r, e) -> {
-        if (nonNull(r)) {
-            return HttpURLConnection.HTTP_OK != r.status();
-        }
-        return true;
-    };
+    private BiPredicate<Res, Throwable> predicate;
 
     //ws
     private WSListener wsListener;
@@ -105,7 +100,6 @@ public class Req {
     }
 
     public CompletableFuture<Res> okAsync() {
-        this.async = true;
         return OK.of().okAsync(this);
     }
 
@@ -126,133 +120,6 @@ public class Req {
         return this;
     }
 
-
-    //header
-    public Req headers(final Map<String, String> headers) {
-        if (nonNull(headers)) {
-            headers().putAll(headers);
-        }
-
-        return this;
-    }
-
-    public Req header(final String name, final String value) {
-        if (isNull(name) || isNull(value)) {
-            return this;
-        }
-
-        headers().put(name, value);
-        return this;
-    }
-
-    public Req cookie(final String k, final String v) {
-        if (isNull(k) || isNull(v)) {
-            return this;
-        }
-
-        cookie().put(k, v);
-        return this;
-
-    }
-
-    public Req cookie(final Map<String, String> cookies) {
-        if (nonNull(cookies)) {
-            cookie().putAll(cookies);
-        }
-
-        return this;
-    }
-
-    public Req contentType(final ContentType contentType) {
-        if (isNull(contentType)) {
-            return this;
-        }
-
-        this.contentType = contentType.v();
-
-        header(Header.content_type.name(), String.join(";charset=", contentType(), charset().name()));
-        return this;
-    }
-
-
-    public Req charset(final Charset charset) {
-        this.charset = charset;
-        return this;
-    }
-
-    public Req ua(final String ua) {
-        headers().put(Header.user_agent.v(), ua);
-        return this;
-    }
-
-
-    public Req auth(final String auth) {
-        headers().put(Header.authorization.v(), auth);
-        return this;
-    }
-
-    public Req bearer(final String token) {
-        return auth("Bearer " + token);
-    }
-
-    //url
-    public Req url(final String url) {
-        try {
-            this.url = new URL(Util.urlRegex(url));
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        return this;
-    }
-
-    public Req query(final String k, final String v) {
-        query().put(k, v);
-        return this;
-    }
-
-
-    public Req query(final Map<String, String> querys) {
-        if (nonNull(querys)) {
-            querys.forEach(query()::put);
-        }
-
-        return this;
-    }
-
-    public Req scheme(final String scheme) {
-        this.scheme = scheme;
-        return this;
-    }
-
-    public Req host(final String host) {
-        this.host = host;
-        return this;
-    }
-
-    public Req port(final int port) {
-        this.port = port;
-        return this;
-    }
-
-
-    public Req path(final String path) {
-        if (isNull(path)) {
-            return this;
-        }
-
-        paths().add(Util.replacePath(path));
-        return this;
-    }
-
-
-    public Req pathFirst(final String path) {
-        if (isNull(path)) {
-            return this;
-        }
-
-        paths().addFirst(Util.replacePath(path));
-        return this;
-    }
 
     //method
     public Req method(final Method method) {
@@ -306,6 +173,129 @@ public class Req {
     }
 
 
+    //header
+    public Req headers(final Map<String, String> headers) {
+        if (nonNull(headers)) {
+            headers().putAll(headers);
+        }
+
+        return this;
+    }
+
+    public Req header(final String name, final String value) {
+        if (isNull(name) || isNull(value)) {
+            return this;
+        }
+
+        headers().put(name, value);
+        return this;
+    }
+
+    public Req cookies(final Map<String, String> cookies) {
+        if (nonNull(cookies)) {
+            cookie().putAll(cookies);
+        }
+
+        return this;
+    }
+
+    public Req cookie(final String k, final String v) {
+        if (isNull(k) || isNull(v)) {
+            return this;
+        }
+
+        cookie().put(k, v);
+        return this;
+
+    }
+
+    public Req contentType(final ContentType contentType) {
+        if (isNull(contentType)) {
+            return this;
+        }
+
+        this.contentType = contentType.v();
+
+        header(Header.content_type.v(), String.join(";charset=", contentType(), charset().name()));
+        return this;
+    }
+
+    public Req charset(final Charset charset) {
+        this.charset = charset;
+        return this;
+    }
+
+    public Req ua(final String ua) {
+        headers().put(Header.user_agent.v(), ua);
+        return this;
+    }
+
+    public Req auth(final String auth) {
+        headers().put(Header.authorization.v(), auth);
+        return this;
+    }
+
+    public Req bearer(final String token) {
+        return auth("Bearer " + token);
+    }
+
+    //url
+    public Req url(final String url) {
+        try {
+            this.url = new URL(Util.urlRegex(url));
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        return this;
+    }
+
+    public Req scheme(final String scheme) {
+        this.scheme = scheme;
+        return this;
+    }
+
+    public Req host(final String host) {
+        this.host = host;
+        return this;
+    }
+
+    public Req port(final int port) {
+        this.port = port;
+        return this;
+    }
+
+    public Req path(final String path) {
+        if (isNull(path)) {
+            return this;
+        }
+
+        paths().add(Util.replacePath(path));
+        return this;
+    }
+
+
+    public Req pathFirst(final String path) {
+        if (isNull(path)) {
+            return this;
+        }
+
+        paths().addFirst(Util.replacePath(path));
+        return this;
+    }
+
+    public Req query(final String k, final String v) {
+        query().put(k, v);
+        return this;
+    }
+
+    public Req query(final Map<String, String> querys) {
+        if (nonNull(querys)) {
+            querys.forEach(query()::put);
+        }
+
+        return this;
+    }
+
     //form
     public Req multipart() {
         this.method = Method.POST;
@@ -314,10 +304,13 @@ public class Req {
         return this;
     }
 
-
-    public Req file(String key, String fileName, byte[] bytes) {
-        contentType(ContentType.multipart);
-        mul().addFormDataPart(key, fileName, new ReqBody(contentType(), charset(), bytes));
+    public Req file(String name, String fileName, byte[] bytes) {
+        multipart().mul()
+                .addFormDataPart(
+                        name,
+                        fileName,
+                        RequestBody.create(bytes, MediaType.parse(contentType()))
+                );
         return this;
     }
 
@@ -346,12 +339,12 @@ public class Req {
         return this;
     }
 
+
     //async
     public Req success(final Consumer<Res> success) {
         this.success = success;
         return this;
     }
-
 
     public Req fail(final Consumer<IOException> fail) {
         this.fail = fail;
@@ -363,7 +356,13 @@ public class Req {
     public Req retry(final int max) {
         return retry(
                 max,
-                Duration.ofSeconds(1), predicate());
+                Duration.ofSeconds(1),
+                (r, e) -> {
+                    if (nonNull(r)) {
+                        return HttpURLConnection.HTTP_OK != r.status();
+                    }
+                    return true;
+                });
     }
 
     public Req retry(final int max, final Duration delay, final BiPredicate<Res, Throwable> predicate) {
@@ -381,7 +380,7 @@ public class Req {
         return this;
     }
 
-    public Req listener(final WSListener listener) {
+    public Req wsListener(final WSListener listener) {
         this.wsListener = listener;
         return this;
     }
@@ -513,9 +512,6 @@ public class Req {
         return sseListener;
     }
 
-    public boolean isAsync() {
-        return async;
-    }
 
     public boolean isMultipart() {
         return multipart;
