@@ -54,12 +54,20 @@ public final class OK {
      * <p>
      * 只有http请求有返回值，ws和sse没有返回值
      *
-     * @return Res {@code  Res}
+     * @param req 请求参数 {@link Req}
+     * @return Res {@link Res}
      */
     public Res ok(final Req req) {
         return okAsync(req).join();
     }
 
+    /**
+     * <h2>异步调用发送请求</h2>
+     * 只有http请求有返回值，ws和sse没有返回值
+     *
+     * @param req 请求参数 {@link Req}
+     * @return Res {@link Res}
+     */
     public CompletableFuture<Res> okAsync(final Req req) {
         this.req = req;
         return ojbk();
@@ -100,14 +108,13 @@ public final class OK {
                     .enqueue(new Callback() {
                         @Override
                         public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
+                            if (req().isRetry()) res(max, duration, predicate.test(null, e), predicate, null);
+
                             res().completeExceptionally(e);
 
                             if (nonNull(req().fail())) {
                                 req().fail().accept(e);
                             }
-
-
-                            res(max, duration, predicate.test(null, e), predicate, null);
 
                             call.cancel();
                         }
@@ -115,13 +122,14 @@ public final class OK {
                         @Override
                         public void onResponse(@NotNull final Call call, @NotNull final Response res) throws IOException {
                             final Res r = Res.of(res);
+
+                            if (req().isRetry()) res(max, duration, predicate.test(r, null), predicate, null);
+
                             res().complete(r);
 
                             if (nonNull(req().success())) {
                                 req().success().accept(r);
                             }
-
-                            res(max, duration, predicate.test(r, null), predicate, null);
 
                             call.cancel();
                         }
