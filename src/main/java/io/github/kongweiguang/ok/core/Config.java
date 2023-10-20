@@ -3,7 +3,6 @@ package io.github.kongweiguang.ok.core;
 import okhttp3.Authenticator;
 import okhttp3.ConnectionPool;
 import okhttp3.Credentials;
-import okhttp3.Dispatcher;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
@@ -11,7 +10,9 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.isNull;
@@ -25,9 +26,17 @@ public final class Config {
             .addInterceptor(TimeoutInterceptor.of)
             .build();
 
-
     private static List<Interceptor> interceptors;
-    private static ExecutorService executorService;
+
+    private static Executor exec = new ThreadPoolExecutor(
+            0,
+            Integer.MAX_VALUE,
+            60,
+            TimeUnit.SECONDS,
+            new SynchronousQueue<>(),
+            r -> new Thread(r, "ok-thread")
+    );
+
     private static ConnectionPool connectionPool;
     private static Proxy proxy;
     private static Authenticator proxyAuthenticator;
@@ -40,10 +49,6 @@ public final class Config {
             for (Interceptor interceptor : interceptors) {
                 builder.addInterceptor(interceptor);
             }
-        }
-
-        if (nonNull(executorService)) {
-            builder.dispatcher(new Dispatcher(executorService));
         }
 
         if (nonNull(connectionPool)) {
@@ -62,8 +67,12 @@ public final class Config {
     }
 
 
-    public static void executor(final ExecutorService executor) {
-        executorService = executor;
+    public static void exec(final Executor executor) {
+        exec = executor;
+    }
+
+    public static Executor exec() {
+        return exec;
     }
 
     public static void addInterceptor(final Interceptor interceptor) {

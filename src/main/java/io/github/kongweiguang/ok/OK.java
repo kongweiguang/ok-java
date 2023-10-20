@@ -6,8 +6,6 @@ import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.MultiValueMap;
 import io.github.kongweiguang.ok.core.Util;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -17,9 +15,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.internal.http.HttpMethod;
 import okhttp3.sse.EventSources;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
@@ -37,19 +33,17 @@ public final class OK {
     private final OkHttpClient C;
     private final Request.Builder builder;
     private Req req;
-    private final CompletableFuture<Res> resFuture = new CompletableFuture<>();
 
     //async
     private boolean async;
+    //retry
+    private boolean retry;
 
-
-    private OK(final OkHttpClient c) {
-        this.C = c;
+    private OK(final Req req) {
+        this.C = Config.client();
         this.builder = new Request.Builder();
-    }
 
-    public static OK of() {
-        return new OK(Config.client());
+        req(req).retry(req.max() > 0);
     }
 
     /**
@@ -60,8 +54,8 @@ public final class OK {
      * @param req 请求参数 {@link Req}
      * @return Res {@link Res}
      */
-    public Res ok(final Req req) {
-        return okAsync(req).join();
+    public static Res ok(final Req req) {
+        return new OK(req).ojbk().join();
     }
 
     /**
@@ -71,10 +65,20 @@ public final class OK {
      * @param req 请求参数 {@link Req}
      * @return Res {@link Res}
      */
-    public CompletableFuture<Res> okAsync(final Req req) {
-        this.req = req;
-        this.async = true;
-        return ojbk();
+    public static CompletableFuture<Res> okAsync(final Req req) {
+        return new OK(req).async(true).ojbk();
+    }
+
+    private CompletableFuture<Res> ojbk() {
+        bf();
+
+        builder().tag(Req.class, req());
+
+        if (reqType()) {
+            return http0(new AtomicInteger(req().max()), req().delay(), req().predicate());
+        }
+
+        return CompletableFuture.completedFuture(null);
     }
 
     private boolean reqType() {
@@ -92,82 +96,45 @@ public final class OK {
         return false;
     }
 
+    private CompletableFuture<Res> http0(final AtomicInteger max,
+                                         final Duration duration,
+                                         final BiPredicate<Res, Throwable> predicate) {
 
-    private CompletableFuture<Res> ojbk() {
-        bf();
-
-        builder().tag(Req.class, req());
-
-        if (reqType()) {
-            return http0(new AtomicInteger(req().max()), req().delay(), req().predicate());
-        }
-
-        return null;
-    }
-
-    private CompletableFuture<Res> http0(final AtomicInteger max, final Duration duration, final BiPredicate<Res, Throwable> predicate) {
-
-        if (async) {
-            client().newCall(builder().build())
-                    .enqueue(new Callback() {
-                        @Override
-                        public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
-                            if (req().isRetry()) res(max, duration, predicate.test(null, e), predicate, null);
-
-                            res().completeExceptionally(e);
-
-                            if (nonNull(req().fail())) {
-                                req().fail().accept(e);
-                            }
-
-                            call.cancel();
+        if (async()) {
+            return CompletableFuture.supplyAsync(this::execute, Config.exec())
+                    .whenComplete((r, t) -> {
+                        if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
+                            Util.sleep(duration.toMillis());
+                            http0(max, duration, predicate);
+                            return;
                         }
 
-                        @Override
-                        public void onResponse(@NotNull final Call call, @NotNull final Response res) throws IOException {
-                            final Res r = Res.of(res);
-
-                            if (req().isRetry()) res(max, duration, predicate.test(r, null), predicate, null);
-
-                            res().complete(r);
-
-                            if (nonNull(req().success())) {
-                                req().success().accept(r);
-                            }
-
-                            call.cancel();
+                        if (nonNull(t) && nonNull(req().fail())) {
+                            req().fail().accept(t);
+                        } else if (r.isOk() && nonNull(req().success())) {
+                            req().success().accept(r);
                         }
                     });
 
-            return res();
         } else {
-            try (Response execute = client().newCall(builder().build()).execute()) {
-                final Res res = Res.of(execute);
-                return res(max, duration, predicate.test(res, null), predicate, res);
-            } catch (Exception e) {
-                return res(max, duration, predicate, e);
-            }
+            return CompletableFuture.completedFuture(execute())
+                    .handle((r, t) -> {
+                        if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
+                            Util.sleep(duration.toMillis());
+                            return http0(max, duration, predicate).join();
+                        }
+                        return r;
+                    });
         }
 
     }
 
-    private CompletableFuture<Res> res(final AtomicInteger max, final Duration duration, final BiPredicate<Res, Throwable> predicate, final Exception e) {
-        if (req().isRetry() && max.getAndDecrement() > 0 && predicate.test(null, e)) {
-            Util.sleep(duration.toMillis());
-            return http0(max, duration, predicate);
-        } else {
+    public Res execute() {
+        try (Response execute = client().newCall(builder().build()).execute()) {
+            return Res.of(execute);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private CompletableFuture<Res> res(final AtomicInteger max, final Duration duration, final boolean predicate, final BiPredicate<Res, Throwable> pre, final Res res) {
-        if (req().isRetry() && max.getAndDecrement() > 0 && predicate) {
-            Util.sleep(duration.toMillis());
-            return http0(max, duration, pre);
-        }
-
-        res().complete(res);
-        return res();
     }
 
 
@@ -175,6 +142,47 @@ public final class OK {
         addMethod();
         addQuery();
         addHeader();
+    }
+
+    private void addMethod() {
+        builder().method(req().method().name(), addBody());
+    }
+
+
+    private RequestBody addBody() {
+        RequestBody rb = null;
+
+        if (HttpMethod.permitsRequestBody(req().method().name())) {
+            if (req().isMultipart()) {
+                //multipart 格式提交
+                req().contentType(ContentType.multipart)
+                        .form()
+                        .forEach(req().mul()::addFormDataPart);
+
+                rb = req().mul()
+                        .setType(MediaType.parse(req().contentType()))
+                        .build();
+
+            } else if (req().isForm()) {
+                final FormBody.Builder b = new FormBody.Builder(req().charset());
+                //form_urlencoded 格式提交
+                req().contentType(ContentType.form_urlencoded)
+                        .form()
+                        .forEach(b::addEncoded);
+
+                rb = b.build();
+
+            } else {
+                //字符串提交
+                rb = RequestBody.create(
+                        req().strBody(),
+                        MediaType.parse(req().contentType())
+                );
+
+            }
+        }
+
+        return rb;
     }
 
     private void addQuery() {
@@ -236,49 +244,6 @@ public final class OK {
     }
 
 
-    private void addMethod() {
-        builder().method(req().method().name(), addBody());
-    }
-
-
-    private RequestBody addBody() {
-        RequestBody rb = null;
-
-        if (HttpMethod.permitsRequestBody(req().method().name())) {
-            if (req().isMultipart()) {
-                //multipart 格式提交
-                req().contentType(ContentType.multipart)
-                        .form()
-                        .forEach(req().mul()::addFormDataPart);
-
-                rb = req().mul()
-                        .setType(MediaType.parse(req().contentType()))
-                        .build();
-
-            } else if (req().isForm()) {
-                final FormBody.Builder b = new FormBody.Builder(req().charset());
-
-                //form_urlencoded 格式提交
-                req().contentType(ContentType.form_urlencoded)
-                        .form()
-                        .forEach(b::addEncoded);
-
-                rb = b.build();
-
-            } else {
-                //字符串提交
-                rb = RequestBody.create(
-                        req().strBody(),
-                        MediaType.parse(req().contentType())
-                );
-
-            }
-        }
-
-        return rb;
-    }
-
-
     private void ws0() {
         client().newWebSocket(builder().build(), req().wsListener());
     }
@@ -292,6 +257,22 @@ public final class OK {
     }
 
 
+    private OK req(final Req req) {
+        this.req = req;
+        return this;
+    }
+
+    private OK retry(final boolean retry) {
+        this.retry = retry;
+        return this;
+    }
+
+    public OK async(final boolean async) {
+        this.async = async;
+        return this;
+    }
+
+    //get
     private OkHttpClient client() {
         return C;
     }
@@ -300,12 +281,15 @@ public final class OK {
         return builder;
     }
 
-
     private Req req() {
         return req;
     }
 
-    private CompletableFuture<Res> res() {
-        return resFuture;
+    public boolean async() {
+        return async;
+    }
+
+    public boolean retry() {
+        return retry;
     }
 }

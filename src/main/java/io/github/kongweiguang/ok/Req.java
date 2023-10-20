@@ -16,8 +16,6 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.WebSocketListener;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -69,11 +67,10 @@ public class Req {
 
     //async
     private Consumer<Res> success;
-    private Consumer<IOException> fail;
+    private Consumer<Throwable> fail;
 
     //retry
-    private boolean retry;
-    private int max = 1;
+    private int max;
     private Duration delay;
     private BiPredicate<Res, Throwable> predicate;
 
@@ -96,11 +93,11 @@ public class Req {
     }
 
     public Res ok() {
-        return OK.of().ok(this);
+        return OK.ok(this);
     }
 
     public CompletableFuture<Res> okAsync() {
-        return OK.of().okAsync(this);
+        return OK.okAsync(this);
     }
 
 
@@ -346,7 +343,7 @@ public class Req {
         return this;
     }
 
-    public Req fail(final Consumer<IOException> fail) {
+    public Req fail(final Consumer<Throwable> fail) {
         this.fail = fail;
         return this;
     }
@@ -359,14 +356,13 @@ public class Req {
                 Duration.ofSeconds(1),
                 (r, e) -> {
                     if (nonNull(r)) {
-                        return HttpURLConnection.HTTP_OK != r.status();
+                        return !r.isOk();
                     }
                     return true;
                 });
     }
 
     public Req retry(final int max, final Duration delay, final BiPredicate<Res, Throwable> predicate) {
-        this.retry = true;
         this.max = max;
         this.delay = delay;
         this.predicate = predicate;
@@ -487,7 +483,7 @@ public class Req {
         return success;
     }
 
-    public Consumer<IOException> fail() {
+    public Consumer<Throwable> fail() {
         return fail;
     }
 
@@ -519,10 +515,6 @@ public class Req {
 
     public boolean isForm() {
         return nonNull(form);
-    }
-
-    public boolean isRetry() {
-        return retry;
     }
 
     @Override

@@ -2,7 +2,11 @@ package io.github.kongweiguang.ok.core;
 
 import static java.util.Objects.isNull;
 
-public class Util {
+public final class Util {
+
+    private Util() {
+    }
+
     public static String replacePath(String path) {
         if (isNull(path)) {
             return "";
@@ -30,7 +34,7 @@ public class Util {
     public static void sleep(long millis) {
         try {
             Thread.sleep(millis);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
 
         }
     }
