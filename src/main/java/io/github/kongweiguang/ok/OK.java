@@ -32,10 +32,7 @@ public final class OK {
   private final OkHttpClient C;
   private final Request.Builder builder;
   private Req req;
-
-  //async
   private boolean async;
-  //retry
   private boolean retry;
 
   private OK(final Req req) {
@@ -68,13 +65,6 @@ public final class OK {
     return new OK(req).async(true).ojbk();
   }
 
-  private static String cookie2Str(Map<String, String> cookies) {
-    StringBuilder sb = new StringBuilder();
-
-    cookies.forEach((k, v) -> sb.append(k).append('=').append(v).append("; "));
-
-    return sb.toString();
-  }
 
   private CompletableFuture<Res> ojbk() {
     bf();
@@ -224,6 +214,14 @@ public final class OK {
     }
   }
 
+  private static String cookie2Str(Map<String, String> cookies) {
+    StringBuilder sb = new StringBuilder();
+
+    cookies.forEach((k, v) -> sb.append(k).append('=').append(v).append("; "));
+
+    return sb.toString();
+  }
+
   private void ws0() {
     client().newWebSocket(builder().build(), req().wsListener());
   }
@@ -243,7 +241,7 @@ public final class OK {
     return this;
   }
 
-  public OK async(final boolean async) {
+  private OK async(final boolean async) {
     this.async = async;
     return this;
   }
@@ -261,7 +259,7 @@ public final class OK {
     return req;
   }
 
-  public boolean async() {
+  private boolean async() {
     return async;
   }
 
