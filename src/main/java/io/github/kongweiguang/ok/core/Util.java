@@ -20,7 +20,7 @@ public final class Util {
 
   public static String urlRegex(String url) {
 
-    if (!url.startsWith(Const._http) || !url.startsWith(Const._https)) {
+    if (!url.startsWith(Const._http) && !url.startsWith(Const._https)) {
       if (url.startsWith("/")) {
         url = Const._http + Const.localhost + url;
       } else {
