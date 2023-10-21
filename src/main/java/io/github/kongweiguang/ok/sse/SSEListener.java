@@ -47,7 +47,7 @@ public abstract class SSEListener extends EventSourceListener {
   @Override
   public void onClosed(@NotNull final EventSource eventSource) {
     this.es = eventSource;
-    client(eventSource.request().tag(Req.class));
+    closed(eventSource.request().tag(Req.class));
   }
 
 
@@ -65,7 +65,7 @@ public abstract class SSEListener extends EventSourceListener {
   public void fail(final Req req, final Res res, final Throwable t) {
   }
 
-  public void client(final Req req) {
+  public void closed(final Req req) {
   }
 
 }

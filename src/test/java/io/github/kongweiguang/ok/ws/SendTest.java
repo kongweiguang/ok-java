@@ -9,12 +9,41 @@ public class SendTest {
   @Test
   void test() {
 
-    final Res ok = Req.of().ws().url("ws://websocket/test").wsListener(new WSListener() {
-      @Override
-      public void msg(final Req req, final String text) {
+    final Res ok = Req.ws()
+        .url("ws://websocket/test")
+        .wsListener(new WSListener() {
+          @Override
+          public void open(final Req req, final Res res) {
+            super.open(req, res);
+          }
 
-      }
-    }).ok();
+          @Override
+          public void msg(final Req req, final String text) {
+
+          }
+
+          @Override
+          public void msg(final Req req, final byte[] bytes) {
+            super.msg(req, bytes);
+          }
+
+          @Override
+          public void fail(final Req req, final Res res, final Throwable t) {
+            super.fail(req, res, t);
+          }
+
+          @Override
+          public void closing(final Req req, final int code, final String reason) {
+            super.closing(req, code, reason);
+          }
+
+          @Override
+          public void closed(final Req req, final int code, final String reason) {
+            super.closed(req, code, reason);
+          }
+        })
+        .ok();
+    //res == null
   }
 
 }

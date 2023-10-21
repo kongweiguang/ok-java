@@ -9,7 +9,7 @@ public class RetryTest {
 
   @Test
   void testRetry() {
-    final Res res = Req.of()
+    final Res res = Req
         .get()
         .url("http://localhost:80/get_string")
         .query("a", "1")

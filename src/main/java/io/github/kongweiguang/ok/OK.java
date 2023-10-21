@@ -79,7 +79,7 @@ public final class OK {
   }
 
   private boolean reqType() {
-    switch (req().typeEnum()) {
+    switch (req().reqType()) {
       case http:
         return true;
       case ws:
@@ -148,7 +148,7 @@ public final class OK {
     RequestBody rb = null;
 
     if (HttpMethod.permitsRequestBody(req().method().name())) {
-      if (req().isMultipart()) {
+      if (req().isMul()) {
         //multipart 格式提交
         req().contentType(ContentType.multipart).form().forEach(req().mul()::addFormDataPart);
 

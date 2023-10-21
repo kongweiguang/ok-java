@@ -31,7 +31,7 @@
       <artifactId>KHTTP</artifactId>
       <groupId>io.github.kongweiguang</groupId>
       <scope>test</scope>
-      <version>0.0.1</version>
+      <version>0.1</version>
     </dependency>
 
   </dependencies>

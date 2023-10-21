@@ -13,8 +13,7 @@ public class ResTest {
 
   @Test
   void testRes() {
-    final Res res = Req.of()
-        .get()
+    final Res res = Req.get()
         .url("http://localhost:80/get_string")
         .query("a", "1")
         .query("b", "2")

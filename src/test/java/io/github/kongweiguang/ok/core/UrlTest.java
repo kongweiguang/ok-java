@@ -8,18 +8,18 @@ public class UrlTest {
 
   @Test
   void test1() {
-    final Res res = Req.of()
-        .get()
-        .scheme("http")
-        .host("localhost")
-        .port(8080)
+    final Res res = Req.get()
+        .scheme(Const.http)
+        .host(Const.localhost)
+        .port(Const.port)
         .path("get")
         .path("one")
+        .path("two")
         .query("name", "kpp")
         .query("name", "kpp2")
         .query("name1", "kpp1")
         .ok();
-    System.out.println(res.str());
+    // http://localhost:8080/get/one/two?name=kpp&name=kpp2&name1=kpp1
 
   }
 }

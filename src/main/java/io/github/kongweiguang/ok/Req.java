@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
@@ -38,11 +39,12 @@ import okhttp3.WebSocketListener;
  */
 public class Req {
 
-  private final Map<String, String> headers;
   private ReqType typeEnum;
+
   //header
   private Method method;
   private Timeout timeout;
+  private final Map<String, String> headers;
   private Map<String, String> cookie;
   private String contentType;
   private Charset charset;
@@ -59,6 +61,7 @@ public class Req {
   private String strBody;
 
   //form
+  private boolean formUrlencoded;
   private boolean multipart;
   private Map<String, String> form;
   private MultipartBody.Builder mul;
@@ -72,10 +75,8 @@ public class Req {
   private Duration delay;
   private BiPredicate<Res, Throwable> predicate;
 
-  //ws
+  //listener
   private WSListener wsListener;
-
-  //sse
   private SSEListener sseListener;
 
 
@@ -86,23 +87,98 @@ public class Req {
     this.typeEnum = ReqType.http;
   }
 
+  public Req reqType(final ReqType typeEnum) {
+    this.typeEnum = typeEnum;
+    return this;
+  }
+
+  //工厂方法
   public static Req of() {
     return new Req();
   }
 
+  public static Req get() {
+    return of().method(Method.GET);
+  }
+
+  public static Req post() {
+    return of().method(Method.POST);
+  }
+
+  public static Req delete() {
+    return of().method(Method.DELETE);
+  }
+
+  public static Req put() {
+    return of().method(Method.PUT);
+  }
+
+  public static Req patch() {
+    return of().method(Method.PATCH);
+  }
+
+  public static Req head() {
+    return of().method(Method.HEAD);
+  }
+
+  public static Req options() {
+    return of().method(Method.OPTIONS);
+  }
+
+  public static Req trace() {
+    return of().method(Method.TRACE);
+  }
+
+  public static Req connect() {
+    return of().method(Method.CONNECT);
+  }
+
+  public static Req formUrlencoded() {
+    return of().method(Method.POST)
+        .contentType(ContentType.form_urlencoded)
+        .formUrlencoded(true);
+  }
+
+  public static Req multipart() {
+    return of().method(Method.POST)
+        .contentType(ContentType.multipart)
+        .multipart(true);
+  }
+
+  private Req formUrlencoded(final boolean mul) {
+    this.formUrlencoded = mul;
+    return this;
+  }
+
+  private Req multipart(final boolean mul) {
+    this.multipart = mul;
+    return this;
+  }
+
+  //ws
+  public static Req ws() {
+    return of().reqType(ReqType.ws);
+  }
+
+  //sse
+  public static Req sse() {
+    return of().reqType(ReqType.sse);
+  }
+
+  //同步请求
   public Res ok() {
     return OK.ok(this);
   }
 
+  //异步请求
   public CompletableFuture<Res> okAsync() {
     return OK.okAsync(this);
   }
 
-
-  //timeout
+  //timeout，单位秒
   public Req timeout(int timeoutSeconds) {
     if (timeoutSeconds > 0) {
-      timeout = new Timeout(timeoutSeconds);
+      this.timeout = new Timeout(timeoutSeconds);
     }
 
     return this;
@@ -110,63 +186,16 @@ public class Req {
 
   public Req timeout(int connectTimeoutSeconds, int writeTimeoutSeconds, int readTimeoutSeconds) {
     if (connectTimeoutSeconds > 0) {
-      timeout = new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds);
+      this.timeout = new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds);
     }
     return this;
   }
-
 
   //method
   public Req method(final Method method) {
     this.method = method;
     return this;
   }
-
-  public Req get() {
-    this.method = Method.GET;
-    return this;
-  }
-
-  public Req post() {
-    this.method = Method.POST;
-    return this;
-  }
-
-  public Req delete() {
-    this.method = Method.DELETE;
-    return this;
-  }
-
-  public Req put() {
-    this.method = Method.PUT;
-    return this;
-  }
-
-  public Req patch() {
-    this.method = Method.PATCH;
-    return this;
-  }
-
-  public Req head() {
-    this.method = Method.HEAD;
-    return this;
-  }
-
-  public Req options() {
-    this.method = Method.OPTIONS;
-    return this;
-  }
-
-  public Req trace() {
-    this.method = Method.TRACE;
-    return this;
-  }
-
-  public Req connect() {
-    this.method = Method.CONNECT;
-    return this;
-  }
-
 
   //header
   public Req headers(final Map<String, String> headers) {
@@ -178,11 +207,10 @@ public class Req {
   }
 
   public Req header(final String name, final String value) {
-    if (isNull(name) || isNull(value)) {
-      return this;
+    if (nonNull(name) && nonNull(value)) {
+      headers().put(name, value);
     }
 
-    headers().put(name, value);
     return this;
   }
 
@@ -195,11 +223,10 @@ public class Req {
   }
 
   public Req cookie(final String k, final String v) {
-    if (isNull(k) || isNull(v)) {
-      return this;
+    if (nonNull(k) && nonNull(v)) {
+      cookie().put(k, v);
     }
 
-    cookie().put(k, v);
     return this;
 
   }
@@ -260,26 +287,33 @@ public class Req {
   }
 
   public Req path(final String path) {
-    if (isNull(path)) {
-      return this;
+    if (nonNull(path)) {
+      paths().add(Util.replacePath(path));
     }
 
-    paths().add(Util.replacePath(path));
     return this;
   }
 
-
   public Req pathFirst(final String path) {
-    if (isNull(path)) {
-      return this;
+    if (nonNull(path)) {
+      paths().addFirst(Util.replacePath(path));
     }
 
-    paths().addFirst(Util.replacePath(path));
     return this;
   }
 
   public Req query(final String k, final String v) {
     query().put(k, v);
+    return this;
+  }
+
+  public Req query(final String k, final List<String> vs) {
+    if (nonNull(k) && nonNull(vs)) {
+      for (String v : vs) {
+        query().put(k, v);
+      }
+    }
+
     return this;
   }
 
@@ -292,16 +326,12 @@ public class Req {
   }
 
   //form
-  public Req multipart() {
-    this.method = Method.POST;
-    this.multipart = true;
-    contentType(ContentType.multipart);
-    return this;
-  }
-
   public Req file(String name, String fileName, byte[] bytes) {
-    multipart().mul()
-        .addFormDataPart(name, fileName, RequestBody.create(bytes, MediaType.parse(contentType())));
+    mul().addFormDataPart(
+        name,
+        fileName,
+        RequestBody.create(bytes, MediaType.parse(contentType()))
+    );
     return this;
   }
 
@@ -330,7 +360,6 @@ public class Req {
     return this;
   }
 
-
   //async
   public Req success(final Consumer<Res> success) {
     this.success = success;
@@ -342,18 +371,22 @@ public class Req {
     return this;
   }
 
-
   //retry
   public Req retry(final int max) {
-    return retry(max, Duration.ofSeconds(1), (r, e) -> {
-      if (nonNull(r)) {
-        return !r.isOk();
-      }
-      return true;
-    });
+    return retry(
+        max,
+        Duration.ofSeconds(1),
+        (r, e) -> {
+          if (nonNull(r)) {
+            return !r.isOk();
+          }
+          return true;
+        });
   }
 
-  public Req retry(final int max, final Duration delay,
+  public Req retry(
+      final int max,
+      final Duration delay,
       final BiPredicate<Res, Throwable> predicate) {
     this.max = max;
     this.delay = delay;
@@ -361,22 +394,9 @@ public class Req {
     return this;
   }
 
-
-  //ws
-  public Req ws() {
-    this.typeEnum = ReqType.ws;
-    return this;
-  }
-
+  //listener
   public Req wsListener(final WSListener listener) {
     this.wsListener = listener;
-    return this;
-  }
-
-
-  //sse
-  public Req sse() {
-    this.typeEnum = ReqType.sse;
     return this;
   }
 
@@ -467,7 +487,7 @@ public class Req {
     return delay;
   }
 
-  public ReqType typeEnum() {
+  public ReqType reqType() {
     return typeEnum;
   }
 
@@ -482,7 +502,6 @@ public class Req {
   public BiPredicate<Res, Throwable> predicate() {
     return predicate;
   }
-
 
   public Timeout timeout() {
     return timeout;
@@ -500,13 +519,12 @@ public class Req {
     return sseListener;
   }
 
-
-  public boolean isMultipart() {
+  public boolean isMul() {
     return multipart;
   }
 
   public boolean isForm() {
-    return nonNull(form);
+    return formUrlencoded;
   }
 
   @Override
