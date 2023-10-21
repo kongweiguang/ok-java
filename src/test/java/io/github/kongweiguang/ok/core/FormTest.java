@@ -12,15 +12,26 @@ public class FormTest {
 
   @Test
   void testForm() throws IOException {
-    final Res ok = Req.post()
+    //application/x-www-form-urlencoded
+    final Res ok = Req.formUrlencoded()
         .url("http://localhost:80/post_form")
-        //application/x-www-form-urlencoded
         .form("a", "1")
         .form(new HashMap<String, String>() {{
           put("b", "2");
         }})
-        //multipart/form-data
+        .ok();
+  }
+
+  @Test
+  void test2() throws Exception {
+    //multipart/form-data
+    final Res ok = Req.multipart()
+        .url("http://localhost:80/post_form")
         .file("k", "k.txt", Files.readAllBytes(Paths.get("")))
+        .form("a", "1")
+        .form(new HashMap<String, String>() {{
+          put("b", "2");
+        }})
         .ok();
   }
 }

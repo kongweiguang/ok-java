@@ -99,6 +99,10 @@ public final class Config {
     proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
   }
 
+  public static void proxy(final Proxy.Type type, final String host, final int port) {
+    proxy = new Proxy(type, new InetSocketAddress(host, port));
+  }
+
   public static void proxyAuthenticator(final String username, final String password) {
     proxyAuthenticator = (route, response) -> response.request()
         .newBuilder()

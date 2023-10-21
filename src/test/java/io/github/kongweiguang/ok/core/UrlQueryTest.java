@@ -6,19 +6,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 
-public class ParamTest {
+public class UrlQueryTest {
 
   @Test
   void test1() throws Exception {
-    final Res res = Req.post()
-        //query
-        .query("a", "1")
-        .query("b", "2")
-        .query("c", "3")
-        .query("d", Arrays.asList("0", "9", "8"))
+    //http://localhost:8080/get/one/two?k1=v1&k2=1&k2=2&k3=v3&k4=v4
+    final Res res = Req.get()
+        .url("http://localhost:8080/get/one/two")
+        .query("k1", "v1")
+        .query("k2", Arrays.asList("1", "2"))
         .query(new HashMap<String, String>() {{
-          put("e", "4");
-          put("f", "5");
+          put("k3", "v3");
+          put("k4", "v4");
         }})
         .ok();
   }

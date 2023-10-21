@@ -1,5 +1,6 @@
 package io.github.kongweiguang.ok;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import io.github.kongweiguang.ok.core.Config;
@@ -174,19 +175,33 @@ public final class OK {
   private void addQuery() {
 
     if (nonNull(req().url())) {
-      req().scheme(req().url().getProtocol())
-          .host(req().url().getHost())
-          .port(req().url().getPort() == -1 ? Const.port : req().url().getPort())
-          .pathFirst(req().url().getPath());
 
-      Optional.ofNullable(req().url().getQuery()).map(e -> e.split("&")).ifPresent(qr -> {
-        for (String part : qr) {
-          String[] kv = part.split("=");
-          if (kv.length > 1) {
-            req().query(kv[0], kv[1]);
-          }
-        }
-      });
+      if (isNull(req().scheme())) {
+        req().scheme(req().url().getProtocol());
+      }
+
+      if (isNull(req().host())) {
+        req().host(req().url().getHost());
+      }
+
+      if (req().port() == 0) {
+        req().port(req().url().getPort() == -1 ? Const.port : req().url().getPort());
+      }
+
+      if (nonNull(req().url().getPath())) {
+        req().pathFirst(req().url().getPath());
+      }
+
+      Optional.ofNullable(req().url().getQuery())
+          .map(e -> e.split("&"))
+          .ifPresent(qr -> {
+            for (String part : qr) {
+              String[] kv = part.split("=");
+              if (kv.length > 1) {
+                req().query(kv[0], kv[1]);
+              }
+            }
+          });
     }
 
     final HttpUrl.Builder ub = new HttpUrl.Builder();

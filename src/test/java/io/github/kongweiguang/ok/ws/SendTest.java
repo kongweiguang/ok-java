@@ -11,6 +11,7 @@ public class SendTest {
 
     final Res ok = Req.ws()
         .url("ws://websocket/test")
+        .query("k", "v")
         .wsListener(new WSListener() {
           @Override
           public void open(final Req req, final Res res) {
@@ -19,7 +20,7 @@ public class SendTest {
 
           @Override
           public void msg(final Req req, final String text) {
-
+            send("hello");
           }
 
           @Override
