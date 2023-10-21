@@ -24,6 +24,7 @@
 * 非常轻量，代码简单，大小只有15k
 * 链式编程，api友好，用的很爽
 * 支持http，ws，sse调用
+* 支持jdk8以上所有的项目
 
 # 使用方式
 
@@ -299,6 +300,71 @@ public class AsyncTest {
 }
 ```
 
+## 请求超时时间设置
+
+超时设置的时间单位是秒
+
+```java
+public class TimeoutTest {
+
+  @Test
+  void test1() throws Exception {
+    final Res res = Req.get()
+        .url("http://localhost:8080/get_string")
+        .timeout(10)
+        .timeout(10, 10, 10)
+        .ok();
+    System.out.println(res.str());
+  }
+
+}
+
+```
+
+## 响应对象
+
+```java
+
+public class ResTest {
+
+  @Test
+  void testRes() {
+    final Res res = Req.get()
+        .url("http://localhost:80/get_string")
+        .query("a", "1")
+        .query("b", "2")
+        .query("c", "3")
+        .ok();
+
+    //返回值
+    final String str = res.str();
+    final byte[] bytes = res.bytes();
+    final User obj = res.obj(User.class);
+    final List<User> obj1 = res.obj(new TypeRef<List<User>>() {
+    }.type());
+    final List<String> list = res.list();
+    final Map<String, String> map = res.map();
+    final JSONObject jsonObject = res.jsonObj();
+    final InputStream stream = res.stream();
+    final Integer i = res.rInt();
+    final Boolean b = res.rBool();
+
+    //响应头
+    final String ok = res.header("ok");
+    final Map<String, List<String>> headers = res.headers();
+
+    //状态
+    final int status = res.status();
+
+    //原始响应
+    final Response response = res.res();
+
+
+  }
+
+}
+```
+
 ## 重试
 
 重试可以实现同步重试和异步重试，重试的条件可自定义实现
@@ -423,6 +489,7 @@ public class SendTest {
 ```
 
 ## sse请求
+
 sse请求返回的res对象为null
 
 ```java
@@ -445,6 +512,7 @@ public class Test1 {
               close();
             }
           }
+
           @Override
           public void open(final Req req, final Res res) {
             super.open(req, res);
@@ -464,5 +532,36 @@ public class Test1 {
 
     Thread.sleep(10000);
   }
+}
+```
+## 全局配置设置
+```java
+
+public class ConfigTest {
+
+  @Test
+  void test1() throws Exception {
+    //设置代理
+    Config.proxy("127.0.0.1", 80);
+    Config.proxy(Type.SOCKS, "127.0.0.1", 80);
+    Config.proxyAuthenticator("k", "pass");
+
+    //设置拦截器
+    Config.addInterceptor(new Interceptor() {
+      @NotNull
+      @Override
+      public Response intercept(@NotNull final Chain chain) throws IOException {
+        System.out.println(1);
+        return chain.proceed(chain.request());
+      }
+    });
+
+    //设置连接池
+    Config.connectionPool(new ConnectionPool(10, 10, TimeUnit.MINUTES));
+
+    //设置异步调用的线程池
+    Config.exec(Executors.newCachedThreadPool());
+  }
+
 }
 ```
