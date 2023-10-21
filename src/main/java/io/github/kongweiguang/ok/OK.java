@@ -98,28 +98,30 @@ public final class OK {
       final BiPredicate<Res, Throwable> predicate) {
 
     if (async()) {
-      return CompletableFuture.supplyAsync(this::execute, Config.exec()).whenComplete((r, t) -> {
-        if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
-          Util.sleep(duration.toMillis());
-          http0(max, duration, predicate);
-          return;
-        }
+      return CompletableFuture.supplyAsync(this::execute, Config.exec())
+          .whenComplete((r, t) -> {
+            if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
+              Util.sleep(duration.toMillis());
+              http0(max, duration, predicate);
+              return;
+            }
 
-        if (nonNull(t) && nonNull(req().fail())) {
-          req().fail().accept(t);
-        } else if (r.isOk() && nonNull(req().success())) {
-          req().success().accept(r);
-        }
-      });
+            if (nonNull(t) && nonNull(req().fail())) {
+              req().fail().accept(t);
+            } else if (r.isOk() && nonNull(req().success())) {
+              req().success().accept(r);
+            }
+          });
 
     } else {
-      return CompletableFuture.completedFuture(execute()).handle((r, t) -> {
-        if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
-          Util.sleep(duration.toMillis());
-          return http0(max, duration, predicate).join();
-        }
-        return r;
-      });
+      return CompletableFuture.completedFuture(execute())
+          .handle((r, t) -> {
+            if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
+              Util.sleep(duration.toMillis());
+              return http0(max, duration, predicate).join();
+            }
+            return r;
+          });
     }
 
   }

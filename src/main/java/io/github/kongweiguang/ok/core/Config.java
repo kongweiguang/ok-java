@@ -19,6 +19,7 @@ import okhttp3.OkHttpClient;
 
 public final class Config {
 
+  //默认的客户端
   private static final OkHttpClient default_c = new OkHttpClient.Builder()
       .connectTimeout(60, TimeUnit.SECONDS)
       .writeTimeout(60, TimeUnit.SECONDS)
@@ -26,16 +27,16 @@ public final class Config {
       .addInterceptor(TimeoutInterceptor.of)
       .build();
 
+  //拦截器
   private static List<Interceptor> interceptors;
 
-  private static Executor exec = new ThreadPoolExecutor(0,
-      Integer.MAX_VALUE,
-      60,
-      TimeUnit.SECONDS,
-      new SynchronousQueue<>(),
-      r -> new Thread(r, "ok-thread"));
+  //异步调用的线程池
+  private static Executor exec;
 
+  //连接池配置
   private static ConnectionPool connectionPool;
+
+  //代理配置
   private static Proxy proxy;
   private static Authenticator proxyAuthenticator;
 
@@ -69,6 +70,16 @@ public final class Config {
   }
 
   public static Executor exec() {
+    if (isNull(exec)) {
+      synchronized (Config.class) {
+        exec = new ThreadPoolExecutor(0,
+            Integer.MAX_VALUE,
+            60,
+            TimeUnit.SECONDS,
+            new SynchronousQueue<>(),
+            r -> new Thread(r, "ok-thread"));
+      }
+    }
     return exec;
   }
 

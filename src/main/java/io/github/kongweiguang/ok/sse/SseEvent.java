@@ -6,23 +6,35 @@ package io.github.kongweiguang.ok.sse;
  * @author kongweiguang
  * @since 0.1
  */
-public class SseEvent {
+public final class SseEvent {
 
   private final StringBuilder sb = new StringBuilder();
+
+  private String id;
+  private String type;
+  private String retry;
+
+  private String data;
+
+  public static SseEvent of() {
+    return new SseEvent();
+  }
 
   /**
    * 添加 SSE "id" 行.
    */
-  public SseEvent id(String id) {
-    append("id:").append(id).append("\n");
+  public SseEvent id(final String id) {
+    this.id = id;
+    append("id:").append(this.id).append("\n");
     return this;
   }
 
   /**
    * 添加 SSE "event" 行.
    */
-  public SseEvent name(String name) {
-    append("event:").append(name).append("\n");
+  public SseEvent type(String type) {
+    this.type = type;
+    append("event:").append(this.type).append("\n");
     return this;
   }
 
@@ -30,27 +42,44 @@ public class SseEvent {
    * 添加 SSE "retry" 行.
    */
   public SseEvent reconnectTime(long reconnectTimeMillis) {
-    append("retry:").append(String.valueOf(reconnectTimeMillis)).append("\n");
+    this.retry = String.valueOf(reconnectTimeMillis);
+    append("retry:").append(this.retry).append("\n");
     return this;
   }
 
   /**
    * 添加 SSE "data" 行.
    */
-  public SseEvent data(Object object) {
-    append("data:").append(object.toString()).append("\n");
+  public SseEvent data(String data) {
+    this.data = data;
+    append("data:").append(this.data).append("\n");
     return this;
   }
 
-  /**
-   * 构建为事件文本
-   */
-  public String build() {
-    return append("\n").sb.toString();
-  }
-
-  SseEvent append(String text) {
+  private SseEvent append(String text) {
     this.sb.append(text);
     return this;
+  }
+
+
+  public String id() {
+    return id;
+  }
+
+  public String type() {
+    return type;
+  }
+
+  public String retry() {
+    return retry;
+  }
+
+  public String data() {
+    return data;
+  }
+
+  @Override
+  public String toString() {
+    return sb.toString();
   }
 }

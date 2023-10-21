@@ -33,7 +33,7 @@ public abstract class SSEListener extends EventSourceListener {
       @Nullable final String type,
       @NotNull final String data) {
     this.es = eventSource;
-    event(eventSource.request().tag(Req.class), new SseEvent().id(id).name(type).data(data));
+    event(eventSource.request().tag(Req.class), new SseEvent().id(id).type(type).data(data));
   }
 
   @Override
