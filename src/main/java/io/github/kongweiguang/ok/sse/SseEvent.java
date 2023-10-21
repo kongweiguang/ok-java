@@ -32,7 +32,7 @@ public final class SseEvent {
   /**
    * 添加 SSE "event" 行.
    */
-  public SseEvent type(String type) {
+  public SseEvent type(final String type) {
     this.type = type;
     append("event:").append(this.type).append("\n");
     return this;
@@ -41,7 +41,7 @@ public final class SseEvent {
   /**
    * 添加 SSE "retry" 行.
    */
-  public SseEvent reconnectTime(long reconnectTimeMillis) {
+  public SseEvent reconnectTime(final long reconnectTimeMillis) {
     this.retry = String.valueOf(reconnectTimeMillis);
     append("retry:").append(this.retry).append("\n");
     return this;
@@ -50,13 +50,13 @@ public final class SseEvent {
   /**
    * 添加 SSE "data" 行.
    */
-  public SseEvent data(String data) {
+  public SseEvent data(final String data) {
     this.data = data;
     append("data:").append(this.data).append("\n");
     return this;
   }
 
-  private SseEvent append(String text) {
+  private SseEvent append(final String text) {
     this.sb.append(text);
     return this;
   }
