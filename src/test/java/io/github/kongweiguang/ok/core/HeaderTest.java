@@ -11,13 +11,13 @@ public class HeaderTest {
   @Test
   void test1() throws Exception {
     final Res res = Req.get()
-        .url("http://localhost:8080/get_string")
+        .url("http://localhost:8080/header")
         //contentype
         .contentType(ContentType.json)
         //charset
         .charset(StandardCharsets.UTF_8)
         //user-agent
-        .ua("User-Agent")
+        .ua("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36 OPR/26.0.1656.60")
         //authorization
         .auth("auth qwe")
         //authorization bearer
@@ -37,6 +37,7 @@ public class HeaderTest {
           put("k2", "v2");
         }})
         .ok();
+    System.out.println("res.str() = " + res.str());
   }
 
 }

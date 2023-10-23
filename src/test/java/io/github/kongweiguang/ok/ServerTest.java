@@ -7,6 +7,10 @@ public class ServerTest {
 
   public static void main(String[] args) {
     KHTTP.of()
+        .get("/get_string", (req, res) -> {
+          System.out.println("req = " + req.query());
+          System.out.println("req = " + req.params());
+        })
         .get("/get_query", (req, res) -> {
           final MultiValueMap<String, String> params = req.params();
           System.out.println("params = " + params);

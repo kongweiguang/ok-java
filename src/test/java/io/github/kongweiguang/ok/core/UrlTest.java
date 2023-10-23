@@ -11,6 +11,7 @@ public class UrlTest {
     final Res res = Req.get()
         .url("http://localhost:8080/get/one/two")
         .ok();
+    System.out.println("res = " + res.str());
   }
 
   @Test
@@ -23,6 +24,7 @@ public class UrlTest {
         .path("one")
         .path("two")
         .ok();
+    System.out.println("res.str() = " + res.str());
     // http://localhost:8080/get/one/two
   }
 
@@ -37,5 +39,6 @@ public class UrlTest {
         .path("one")
         .path("two")
         .ok();
+    System.out.println("res = " + res.str());
   }
 }

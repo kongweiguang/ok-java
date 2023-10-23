@@ -22,9 +22,8 @@ public class RestTest {
 
   @Test
   void testPost() {
-    final Res res = Req
-        .post()
-        .url("http://localhost:80/post_json")
+    final Res res = Req.post()
+        .url("http://localhost:8080/post_json")
         .query("b", "b")
         .body(new HashMap<String, Object>() {{
           put("a", "1");
