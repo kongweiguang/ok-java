@@ -9,9 +9,9 @@ public class TimeoutTest {
   @Test
   void test1() throws Exception {
     final Res res = Req.get()
-        .url("http://localhost:8080/get_string")
-        .timeout(10)
-        .timeout(10, 10, 10)
+        .url("http://localhost:8080/timeout")
+        .timeout(3)
+//        .timeout(10, 10, 10)
         .ok();
     System.out.println(res.str());
   }

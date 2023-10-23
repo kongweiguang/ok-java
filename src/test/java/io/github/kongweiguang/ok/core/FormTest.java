@@ -14,24 +14,26 @@ public class FormTest {
   void testForm() throws IOException {
     //application/x-www-form-urlencoded
     final Res ok = Req.formUrlencoded()
-        .url("http://localhost:80/post_form")
+        .url("http://localhost:8080/post_form")
         .form("a", "1")
         .form(new HashMap<String, String>() {{
           put("b", "2");
         }})
         .ok();
+    System.out.println("ok.str() = " + ok.str());
   }
 
   @Test
   void test2() throws Exception {
     //multipart/form-data
     final Res ok = Req.multipart()
-        .url("http://localhost:80/post_form")
-        .file("k", "k.txt", Files.readAllBytes(Paths.get("")))
+        .url("http://localhost:8080/post_mul_form")
+        .file("k", "k.txt", Files.readAllBytes(Paths.get("D:\\k\\k.txt")))
         .form("a", "1")
         .form(new HashMap<String, String>() {{
           put("b", "2");
         }})
         .ok();
+    System.out.println("ok.str() = " + ok.str());
   }
 }

@@ -8,6 +8,7 @@ import io.github.kongweiguang.ok.core.Const;
 import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.MultiValueMap;
+import io.github.kongweiguang.ok.core.Timeout;
 import io.github.kongweiguang.ok.core.Util;
 import java.time.Duration;
 import java.util.Map;
@@ -152,6 +153,11 @@ public final class OK {
     addMethod();
     addQuery();
     addHeader();
+    addTimeout();
+  }
+
+  private void addTimeout() {
+    builder().tag(Timeout.class, req().timeout());
   }
 
   private void addMethod() {
