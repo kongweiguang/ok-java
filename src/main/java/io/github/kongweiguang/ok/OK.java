@@ -101,8 +101,7 @@ public final class OK {
     if (async()) {
       return CompletableFuture.supplyAsync(this::execute, Config.exec())
           .handle((r, t) -> {
-            if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
-              Util.sleep(duration.toMillis());
+            if (handleRetry(max, duration, predicate, r, t)) {
               return http0(max, duration, predicate).join();
             }
 
@@ -118,14 +117,27 @@ public final class OK {
     } else {
       return CompletableFuture.completedFuture(execute())
           .handle((r, t) -> {
-            if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
-              Util.sleep(duration.toMillis());
+            if (handleRetry(max, duration, predicate, r, t)) {
               return http0(max, duration, predicate).join();
             }
+
             return r;
           });
     }
 
+  }
+
+  private boolean handleRetry(final AtomicInteger max,
+      final Duration duration,
+      final BiPredicate<Res, Throwable> predicate,
+      final Res r, final Throwable t) {
+
+    if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
+      Util.sleep(duration.toMillis());
+      return true;
+    }
+
+    return false;
   }
 
   private Res execute() {
