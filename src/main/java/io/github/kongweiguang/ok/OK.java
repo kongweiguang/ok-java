@@ -100,11 +100,10 @@ public final class OK {
 
     if (async()) {
       return CompletableFuture.supplyAsync(this::execute, Config.exec())
-          .whenComplete((r, t) -> {
+          .handle((r, t) -> {
             if (retry() && (max.getAndDecrement() > 0 && predicate.test(r, t))) {
               Util.sleep(duration.toMillis());
-              http0(max, duration, predicate);
-              return;
+              return http0(max, duration, predicate).join();
             }
 
             if (nonNull(t) && nonNull(req().fail())) {
@@ -112,6 +111,8 @@ public final class OK {
             } else if (r.isOk() && nonNull(req().success())) {
               req().success().accept(r);
             }
+
+            return r;
           });
 
     } else {
