@@ -203,7 +203,8 @@ public final class Res {
 
   @Override
   public String toString() {
-    return new StringJoiner(", ", Res.class.getSimpleName() + "[", "]").add("res=" + res)
+    return new StringJoiner(", ", Res.class.getSimpleName() + "[", "]")
+        .add("res=" + res)
         .toString();
   }
 
