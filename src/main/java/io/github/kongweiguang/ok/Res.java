@@ -1,6 +1,7 @@
 package io.github.kongweiguang.ok;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 import kotlin.Pair;
 import okhttp3.Headers;
+import okhttp3.MediaType;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -33,44 +35,14 @@ import okhttp3.ResponseBody;
 public final class Res {
 
   private final Response res;
-  private final byte[] bt;
+  private byte[] bt;
 
   private Res(final Response response) {
-
-    try {
-      final ResponseBody body = response.body();
-
-      if (isNull(body)) {
-        this.bt = new byte[0];
-      } else {
-        this.bt = body.bytes();
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
     this.res = response;
   }
 
-
   public static Res of(final Response response) {
     return new Res(response);
-  }
-
-  private static Charset charset0(final String contentType) {
-    try {
-      String[] parts = contentType.split(";");
-      if (parts.length > 1) {
-        final String part = parts[1];
-        if (part.startsWith("charset=")) {
-          return Charset.forName(part.substring("charset=".length()));
-        }
-
-      }
-    } catch (Exception ignored) {
-
-    }
-    return StandardCharsets.UTF_8;
   }
 
   public Response res() {
@@ -101,12 +73,59 @@ public final class Res {
     return fr;
   }
 
-  public Charset charset() {
+  private MediaType mediaType() {
     final String header = header(Header.content_type.v());
     if (isNull(header)) {
       return null;
     }
-    return charset0(header);
+
+    return MediaType.parse(header);
+  }
+
+
+  public String contentType() {
+    final MediaType mediaType = mediaType();
+    if (mediaType == null) {
+      return null;
+    }
+    return mediaType.type() + "/" + mediaType.subtype();
+  }
+
+  public Charset charset() {
+    final MediaType mediaType = mediaType();
+    if (mediaType == null) {
+      return null;
+    }
+    return mediaType.charset(null);
+  }
+
+  public String contentEncoding() {
+    return header(Header.content_encoding.v());
+  }
+
+  public long contentLength() {
+    final String cl = header(Header.content_length.v());
+    if (isNull(cl)) {
+      return -1;
+    }
+
+    long contentLength = Long.parseLong(cl);
+
+    if (contentLength > 0 && (isChunked() || nonNull(contentEncoding()))) {
+      //按照HTTP协议规范，在 Transfer-Encoding和Content-Encoding设置后 Content-Length 无效。
+      contentLength = -1;
+    }
+
+    return contentLength;
+  }
+
+  public boolean isChunked() {
+    final String transferEncoding = header(Header.transfer_encoding.v());
+    return "Chunked".equalsIgnoreCase(transferEncoding);
+  }
+
+  public String getCookieStr() {
+    return header(Header.set_cookie.v());
   }
 
   public long reqMillis() {
@@ -114,6 +133,20 @@ public final class Res {
   }
 
   public byte[] bytes() {
+    if (isNull(bt)) {
+      try {
+        final ResponseBody body = res.body();
+
+        if (isNull(body)) {
+          this.bt = new byte[0];
+        } else {
+          this.bt = body.bytes();
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
     return bt;
   }
 
@@ -173,4 +206,5 @@ public final class Res {
     return new StringJoiner(", ", Res.class.getSimpleName() + "[", "]").add("res=" + res)
         .toString();
   }
+
 }
