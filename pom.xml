@@ -5,20 +5,20 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.github.kongweiguang</groupId>
-  <artifactId>OK_Java</artifactId>
+  <artifactId>ok-java</artifactId>
   <version>${version}</version>
 
   <name>${project.artifactId}</name>
-  <description>Java project for OK</description>
+  <description>Java HttpClient for okhttp</description>
 
   <properties>
-    <fastjson.version>2.0.40</fastjson.version>
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
-
-    <okhttp.version>4.11.0</okhttp.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
     <version>0.1</version>
+    <okhttp.version>4.11.0</okhttp.version>
+    <fastjson.version>2.0.40</fastjson.version>
   </properties>
 
   <dependencies>
