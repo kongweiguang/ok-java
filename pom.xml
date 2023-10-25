@@ -2,10 +2,26 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>io.github.kongweiguang</groupId>
   <artifactId>OK_Java</artifactId>
+  <version>${version}</version>
+
+  <name>${project.artifactId}</name>
+  <description>Java project for OK</description>
+
+  <properties>
+    <fastjson.version>2.0.40</fastjson.version>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+
+    <okhttp.version>4.11.0</okhttp.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <version>0.1</version>
+  </properties>
 
   <dependencies>
-
     <dependency>
       <artifactId>okhttp-sse</artifactId>
       <groupId>com.squareup.okhttp3</groupId>
@@ -35,12 +51,13 @@
     </dependency>
 
   </dependencies>
-  <dependencyManagement>
-    <dependencies>
 
-    </dependencies>
-  </dependencyManagement>
-  <description>Java project for OK</description>
+  <scm>
+    <connection>https://github.com/kongweiguang/OK.git</connection>
+    <url>https://github.com/kongweiguang/OK</url>
+  </scm>
+
+  <url>https://github.com/kongweiguang</url>
 
   <developers>
     <developer>
@@ -52,7 +69,7 @@
       <timezone>+8</timezone>
     </developer>
   </developers>
-  <groupId>io.github.kongweiguang</groupId>
+
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -60,10 +77,6 @@
     </license>
   </licenses>
 
-
-  <modelVersion>4.0.0</modelVersion>
-
-  <name>${project.artifactId}</name>
 
   <profiles>
     <profile>
@@ -156,25 +169,5 @@
     </profile>
 
   </profiles>
-
-
-  <properties>
-    <fastjson.version>2.0.40</fastjson.version>
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven.compiler.target>8</maven.compiler.target>
-
-    <okhttp.version>4.11.0</okhttp.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version>0.1</version>
-  </properties>
-
-  <scm>
-    <connection>https://github.com/kongweiguang/OK.git</connection>
-    <url>https://github.com/kongweiguang/OK</url>
-  </scm>
-
-  <url>https://github.com/kongweiguang</url>
-
-  <version>${version}</version>
 
 </project>
