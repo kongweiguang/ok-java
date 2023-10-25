@@ -23,6 +23,7 @@ public class Test1 {
               close();
             }
           }
+
           @Override
           public void open(final Req req, final Res res) {
             super.open(req, res);

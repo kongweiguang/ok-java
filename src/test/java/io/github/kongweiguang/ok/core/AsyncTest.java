@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class AsyncTest {
 
   @Test
-  void test1() throws Exception{
+  void test1() throws Exception {
     final CompletableFuture<Res> future = Req.get()
         .url("http://localhost:8080/get")
         .query("a", "1")

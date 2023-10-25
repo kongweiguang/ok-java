@@ -1,6 +1,7 @@
 package io.github.kongweiguang.ok.core;
 
 public final class User {
+
   private String name;
   private Integer age;
   private String[] hobby;

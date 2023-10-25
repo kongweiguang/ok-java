@@ -11,7 +11,7 @@ public class ProxyTest {
   void test1() throws Exception {
 
     Config.proxy("127.0.0.1", 80);
-    Config.proxy(Type.SOCKS,"127.0.0.1", 80);
+    Config.proxy(Type.SOCKS, "127.0.0.1", 80);
     Config.proxyAuthenticator("k", "pass");
 
     final Res res = Req.get()

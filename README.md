@@ -34,7 +34,7 @@ Maven
 
 <dependency>
   <groupId>io.github.kongweiguang</groupId>
-  <artifactId>OK</artifactId>
+  <artifactId>ok-java</artifactId>
   <version>0.1</version>
 </dependency>
 ```
@@ -42,13 +42,13 @@ Maven
 Gradle
 
 ```xml
-implementation 'io.github.kongweiguang:OK:0.1'
+implementation 'io.github.kongweiguang:ok-java:0.1'
 ```
 
 Gradle-Kotlin
 
 ```xml
-implementation("io.github.kongweiguang:OK:0.1")
+implementation("io.github.kongweiguang:ok-java:0.1")
 ```
 
 # 简单介绍
@@ -534,7 +534,9 @@ public class Test1 {
   }
 }
 ```
+
 ## 全局配置设置
+
 ```java
 
 public class ConfigTest {
