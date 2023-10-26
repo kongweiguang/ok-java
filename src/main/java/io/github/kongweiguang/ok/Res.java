@@ -1,7 +1,6 @@
 package io.github.kongweiguang.ok;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
@@ -32,7 +31,7 @@ import okhttp3.ResponseBody;
  *
  * @author kongweiguang
  */
-public final class Res {
+public final class Res implements AutoCloseable {
 
   private final Response res;
   private byte[] bt;
@@ -49,7 +48,7 @@ public final class Res {
     return res;
   }
 
-  public int status() {
+  public int code() {
     return res().code();
   }
 
@@ -73,30 +72,13 @@ public final class Res {
     return fr;
   }
 
-  private MediaType mediaType() {
-    final String header = header(Header.content_type.v());
-    if (isNull(header)) {
-      return null;
-    }
-
-    return MediaType.parse(header);
-  }
-
-
   public String contentType() {
-    final MediaType mediaType = mediaType();
-    if (mediaType == null) {
-      return null;
-    }
+    MediaType mediaType = res().body().contentType();
     return mediaType.type() + "/" + mediaType.subtype();
   }
 
   public Charset charset() {
-    final MediaType mediaType = mediaType();
-    if (mediaType == null) {
-      return null;
-    }
-    return mediaType.charset(null);
+    return res().body().contentType().charset();
   }
 
   public String contentEncoding() {
@@ -104,32 +86,15 @@ public final class Res {
   }
 
   public long contentLength() {
-    final String cl = header(Header.content_length.v());
-    if (isNull(cl)) {
-      return -1;
-    }
-
-    long contentLength = Long.parseLong(cl);
-
-    if (contentLength > 0 && (isChunked() || nonNull(contentEncoding()))) {
-      //按照HTTP协议规范，在 Transfer-Encoding和Content-Encoding设置后 Content-Length 无效。
-      contentLength = -1;
-    }
-
-    return contentLength;
-  }
-
-  public boolean isChunked() {
-    final String transferEncoding = header(Header.transfer_encoding.v());
-    return "Chunked".equalsIgnoreCase(transferEncoding);
+    return res().body().contentLength();
   }
 
   public String getCookieStr() {
     return header(Header.set_cookie.v());
   }
 
-  public long reqMillis() {
-    return res().sentRequestAtMillis();
+  public long useMillis() {
+    return res().receivedResponseAtMillis() - res().sentRequestAtMillis();
   }
 
   public byte[] bytes() {
@@ -200,11 +165,16 @@ public final class Res {
     Files.write(Paths.get(path), bytes(), options);
   }
 
+  @Override
+  public void close() {
+    res().close();
+    this.bt = null;
+  }
 
   @Override
   public String toString() {
     return new StringJoiner(", ", Res.class.getSimpleName() + "[", "]")
-        .add("res=" + res)
+        .add("res=" + res())
         .toString();
   }
 

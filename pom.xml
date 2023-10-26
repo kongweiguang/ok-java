@@ -16,36 +16,44 @@
     <maven.compiler.target>8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <version>0.1</version>
+    <version>0.2</version>
     <okhttp.version>4.11.0</okhttp.version>
     <fastjson.version>2.0.40</fastjson.version>
+    <test.junit>5.10.0</test.junit>
+    <test.khttp>0.1</test.khttp>
   </properties>
 
   <dependencies>
     <dependency>
-      <artifactId>okhttp-sse</artifactId>
       <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp-sse</artifactId>
       <version>${okhttp.version}</version>
     </dependency>
 
     <dependency>
-      <artifactId>fastjson2</artifactId>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
+      <version>${okhttp.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.alibaba.fastjson2</groupId>
+      <artifactId>fastjson2</artifactId>
       <version>${fastjson.version}</version>
     </dependency>
 
 
     <!--test-->
     <dependency>
-      <artifactId>junit-jupiter</artifactId>
       <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
-      <version>5.10.0</version>
+      <version>${test.junit}</version>
     </dependency>
 
     <dependency>
-      <artifactId>KHTTP</artifactId>
       <groupId>io.github.kongweiguang</groupId>
+      <artifactId>KHTTP</artifactId>
       <scope>test</scope>
       <version>0.1</version>
     </dependency>

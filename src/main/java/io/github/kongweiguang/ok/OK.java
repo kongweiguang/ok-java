@@ -22,7 +22,6 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 import okhttp3.internal.http.HttpMethod;
 import okhttp3.sse.EventSources;
 
@@ -142,8 +141,8 @@ public final class OK {
   }
 
   private Res execute() {
-    try (Response execute = client().newCall(builder().build()).execute()) {
-      return Res.of(execute);
+    try {
+      return Res.of(client().newCall(builder().build()).execute());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

@@ -27,6 +27,6 @@ public class DowTest {
         .file("introduce", "introduce.txt", Files.readAllBytes(Paths.get("d:\\k.txt")))
         .form("a", "b")
         .ok();
-    System.out.println(ok.status());
+    System.out.println(ok.code());
   }
 }

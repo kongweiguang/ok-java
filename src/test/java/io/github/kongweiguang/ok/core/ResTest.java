@@ -38,7 +38,7 @@ public class ResTest {
     final Map<String, List<String>> headers = res.headers();
 
     //状态
-    final int status = res.status();
+    final int status = res.code();
 
     //原始响应
     final Response response = res.res();
