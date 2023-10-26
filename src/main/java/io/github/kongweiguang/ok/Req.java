@@ -208,16 +208,16 @@ public final class Req {
     RequestBody rb = null;
 
     if (HttpMethod.permitsRequestBody(method().name())) {
+      //multipart 格式提交
       if (isMul()) {
-        //multipart 格式提交
-        contentType(ContentType.multipart).form().forEach(mul()::addFormDataPart);
+        form().forEach(mul()::addFormDataPart);
 
         rb = mul().setType(MediaType.parse(contentType())).build();
 
       } else if (isForm()) {
         final FormBody.Builder b = new FormBody.Builder(charset());
         //form_urlencoded 格式提交
-        contentType(ContentType.form_urlencoded).form().forEach(b::addEncoded);
+        form().forEach(b::addEncoded);
 
         rb = b.build();
 

@@ -54,7 +54,7 @@ public final class OK {
 
 
   private CompletableFuture<Res> ojbk() {
-    builder().tag(Req.class, req());
+
     if (reqType()) {
       return http0(new AtomicInteger(req().max()), req().delay(), req().predicate());
     }
