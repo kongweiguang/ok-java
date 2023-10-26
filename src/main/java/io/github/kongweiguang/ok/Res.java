@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.StringJoiner;
 import kotlin.Pair;
 import okhttp3.Headers;
-import okhttp3.MediaType;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -73,12 +72,11 @@ public final class Res implements AutoCloseable {
   }
 
   public String contentType() {
-    MediaType mediaType = res().body().contentType();
-    return mediaType.type() + "/" + mediaType.subtype();
+    return res().body().contentType().toString();
   }
 
   public Charset charset() {
-    return res().body().contentType().charset();
+    return res().body().contentType().charset(StandardCharsets.UTF_8);
   }
 
   public String contentEncoding() {
@@ -89,7 +87,7 @@ public final class Res implements AutoCloseable {
     return res().body().contentLength();
   }
 
-  public String getCookieStr() {
+  public String cookieStr() {
     return header(Header.set_cookie.v());
   }
 
