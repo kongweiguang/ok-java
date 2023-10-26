@@ -2,6 +2,8 @@ package io.github.kongweiguang.ok.core;
 
 import static java.util.Objects.isNull;
 
+import java.util.Objects;
+
 public final class Util {
 
   private Util() {
@@ -19,6 +21,9 @@ public final class Util {
   }
 
   public static String urlRegex(String url) {
+    if (isNull(url) || Objects.equals("", url)) {
+      url = "/";
+    }
 
     if (!url.startsWith(Const._http) && !url.startsWith(Const._https)) {
       if (url.startsWith("/")) {

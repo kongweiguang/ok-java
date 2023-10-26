@@ -51,7 +51,7 @@ public final class Req {
   //header
   private Method method;
   private Timeout timeout;
-  private final Map<String, String> headers;
+  private Map<String, String> headers;
   private Map<String, String> cookie;
   private String contentType;
   private Charset charset;
@@ -88,7 +88,6 @@ public final class Req {
 
 
   private Req() {
-    this.headers = new HashMap<>();
     this.charset = StandardCharsets.UTF_8;
     this.method = Method.GET;
     this.typeEnum = ReqType.http;
@@ -105,54 +104,58 @@ public final class Req {
     return new Req();
   }
 
+  public static Req of(final String url) {
+    return of().url(url);
+  }
+
   public static Req get(final String url) {
-    return of().method(Method.GET).url(url);
+    return of(url).method(Method.GET);
   }
 
   public static Req post(final String url) {
-    return of().method(Method.POST).url(url);
+    return of(url).method(Method.POST);
   }
 
   public static Req delete(final String url) {
-    return of().method(Method.DELETE).url(url);
+    return of(url).method(Method.DELETE);
   }
 
   public static Req put(final String url) {
-    return of().method(Method.PUT).url(url);
+    return of(url).method(Method.PUT);
   }
 
   public static Req patch(final String url) {
-    return of().method(Method.PATCH).url(url);
+    return of(url).method(Method.PATCH);
   }
 
   public static Req head(final String url) {
-    return of().method(Method.HEAD).url(url);
+    return of(url).method(Method.HEAD);
   }
 
   public static Req options(final String url) {
-    return of().method(Method.OPTIONS).url(url);
+    return of(url).method(Method.OPTIONS);
   }
 
   public static Req trace(final String url) {
-    return of().method(Method.TRACE).url(url);
+    return of(url).method(Method.TRACE);
   }
 
   public static Req connect(final String url) {
-    return of().method(Method.CONNECT).url(url);
+    return of(url).method(Method.CONNECT);
   }
 
   public static Req formUrlencoded(final String url) {
-    return of().method(Method.POST)
+    return of(url).method(Method.POST)
         .contentType(ContentType.form_urlencoded)
         .formUrlencoded(true)
-        .url(url);
+        ;
   }
 
   public static Req multipart(final String url) {
-    return of().method(Method.POST)
+    return of(url).method(Method.POST)
         .contentType(ContentType.multipart)
         .multipart(true)
-        .url(url);
+        ;
   }
 
   private Req formUrlencoded(final boolean mul) {
@@ -167,12 +170,12 @@ public final class Req {
 
   //ws
   public static Req ws(final String url) {
-    return of().reqType(ReqType.ws).url(url);
+    return of(url).reqType(ReqType.ws);
   }
 
   //sse
   public static Req sse(final String url) {
-    return of().reqType(ReqType.sse).url(url);
+    return of(url).reqType(ReqType.sse);
   }
 
   //同步请求
@@ -192,6 +195,8 @@ public final class Req {
     addMethod();
     addQuery();
     addHeader();
+
+    builder().tag(Req.class, this);
   }
 
 
@@ -226,7 +231,15 @@ public final class Req {
     return rb;
   }
 
+  //判断时候添加过url
+  private boolean isQuery;
+
   private void addQuery() {
+    if (isQuery) {
+      return;
+    }
+
+    isQuery = true;
 
     if (nonNull(url())) {
 
@@ -260,7 +273,7 @@ public final class Req {
 
     final HttpUrl.Builder ub = new HttpUrl.Builder();
 
-    Optional.ofNullable(query())
+    Optional.ofNullable(query)
         .map(MultiValueMap::map)
         .ifPresent(map -> map.forEach((k, v) ->
             v.forEach(e -> ub.addEncodedQueryParameter(k, e))));
@@ -270,18 +283,21 @@ public final class Req {
     ub.scheme(scheme());
     ub.host(host());
     ub.port(port());
+
     final HttpUrl httpUrl = ub.build();
+
     builder().url(httpUrl);
-    url(httpUrl.toString());
+
+    this.url = httpUrl.url();
   }
 
   private void addHeader() {
 
-    if (!headers().isEmpty()) {
+    if (nonNull(headers)) {
       headers().forEach(builder()::addHeader);
     }
 
-    if (!cookie().isEmpty()) {
+    if (nonNull(cookie)) {
       builder().addHeader(Header.cookie.v(), cookie2Str(cookie()));
     }
   }
@@ -298,7 +314,7 @@ public final class Req {
   //timeout，单位秒
   public Req timeout(int timeoutSeconds) {
     if (timeoutSeconds > 0) {
-      this.timeout = new Timeout(timeoutSeconds);
+      return timeout(timeoutSeconds, timeoutSeconds, timeoutSeconds);
     }
 
     return this;
@@ -307,7 +323,9 @@ public final class Req {
   public Req timeout(int connectTimeoutSeconds, int writeTimeoutSeconds, int readTimeoutSeconds) {
     if (connectTimeoutSeconds > 0) {
       this.timeout = new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds);
+      builder().tag(Timeout.class, timeout());
     }
+
     return this;
   }
 
@@ -387,6 +405,7 @@ public final class Req {
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
+
     return this;
   }
 
@@ -446,21 +465,30 @@ public final class Req {
 
   //form
   public Req file(String name, String fileName, byte[] bytes) {
-    mul().addFormDataPart(
-        name,
-        fileName,
-        RequestBody.create(bytes, MediaType.parse(contentType()))
-    );
+    if (isMul()) {
+      mul().addFormDataPart(
+          name,
+          fileName,
+          RequestBody.create(bytes, MediaType.parse(contentType()))
+      );
+    }
+
     return this;
   }
 
   public Req form(final String name, final String value) {
-    form().put(name, value);
+    if (isForm() || isMul()) {
+      form().put(name, value);
+    }
+
     return this;
   }
 
   public Req form(final Map<String, String> form) {
-    form().putAll(form);
+    if (isForm() || isMul()) {
+      form().putAll(form);
+    }
+
     return this;
   }
 
@@ -497,13 +525,16 @@ public final class Req {
 
   //retry
   public Req retry(final int max) {
-    return retry(
-        max,
-        Duration.ofSeconds(1),
+    return retry(max, Duration.ofSeconds(1),
         (r, e) -> {
+          if (nonNull(e)) {
+            return true;
+          }
+
           if (nonNull(r)) {
             return !r.isOk();
           }
+
           return true;
         });
   }
@@ -529,14 +560,18 @@ public final class Req {
     return this;
   }
 
-  //get
 
-  public ReqType typeEnum() {
+  //get
+  public Builder builder() {
+    return builder;
+  }
+
+  public ReqType reqType() {
     return typeEnum;
   }
 
-  Builder builder() {
-    return builder;
+  public Method method() {
+    return method;
   }
 
   public String scheme() {
@@ -551,7 +586,16 @@ public final class Req {
     return port;
   }
 
+  public LinkedList<String> paths() {
+    if (isNull(paths)) {
+      paths = new LinkedList<>();
+    }
+
+    return paths;
+  }
+
   public URL url() {
+    addQuery();
     return url;
   }
 
@@ -567,8 +611,12 @@ public final class Req {
     return charset;
   }
 
-  public Method method() {
-    return method;
+  public MultiValueMap<String, String> query() {
+    if (isNull(query)) {
+      query = new MultiValueMap<>();
+    }
+
+    return query;
   }
 
   public Map<String, String> form() {
@@ -579,14 +627,6 @@ public final class Req {
     return form;
   }
 
-  public MultiValueMap<String, String> query() {
-    if (isNull(query)) {
-      query = new MultiValueMap<>();
-    }
-
-    return query;
-  }
-
   public Map<String, String> cookie() {
     if (isNull(cookie)) {
       cookie = new HashMap<>();
@@ -594,15 +634,6 @@ public final class Req {
 
     return cookie;
   }
-
-  public LinkedList<String> paths() {
-    if (isNull(paths)) {
-      paths = new LinkedList<>();
-    }
-
-    return paths;
-  }
-
 
   public MultipartBody.Builder mul() {
     if (isNull(mul)) {
@@ -617,10 +648,6 @@ public final class Req {
 
   public Duration delay() {
     return delay;
-  }
-
-  public ReqType reqType() {
-    return typeEnum;
   }
 
   public Consumer<Res> success() {
@@ -640,6 +667,10 @@ public final class Req {
   }
 
   public Map<String, String> headers() {
+    if (isNull(headers)) {
+      this.headers = new HashMap<>();
+    }
+
     return headers;
   }
 

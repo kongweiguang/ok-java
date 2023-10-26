@@ -22,8 +22,7 @@ public class DowTest {
 
   @Test
   void testUp() throws IOException {
-    final Res ok = Req.of()
-        .url("http://localhost:80/post_upload_file")
+    final Res ok = Req.multipart("http://localhost:80/post_upload_file")
         .file("introduce", "introduce.txt", Files.readAllBytes(Paths.get("d:\\k.txt")))
         .form("a", "b")
         .ok();

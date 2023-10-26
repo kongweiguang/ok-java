@@ -131,8 +131,6 @@ public final class OK {
     }
   }
 
-  private void addTimeout() {
-  }
 
   private void ws0() {
     client().newWebSocket(builder().build(), req().wsListener());
