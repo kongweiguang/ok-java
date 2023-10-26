@@ -165,10 +165,10 @@ public final class Res implements AutoCloseable {
   public String toString() {
     return new StringBuilder()
         .append("---ok-res---").append("\n")
-        .append("res protocol: ").append(res().protocol()).append('\n')
-        .append("res headers: ").append('\n')
+        .append("protocol: ").append(res().protocol()).append('\n')
+        .append("headers: ").append('\n')
         .append(res().headers()).append("\n")
-        .append("res body: ").append('\n')
+        .append("body: ").append('\n')
         .append(str()).append('\n')
         .toString();
   }
