@@ -196,22 +196,27 @@ public final class Res implements AutoCloseable {
 
   @Override
   public String toString() {
-
-    return new StringBuilder()
+    final StringBuilder sb = new StringBuilder()
         .append("---ok-req---").append('\n')
         .append("method: ").append(res().request().method()).append(' ')
         .append(res().request().url()).append('\n')
         .append("headers: ").append('\n')
         .append(res().request().headers()).append('\n')
-        .append("body: ").append('\n')
-        .append(res().request().tag(Req.class).strBody()).append("\n\n")
+        .append("body: ").append('\n');
+    Object body = res().request().tag(Req.class).strBody();
+
+    if (isNull(body)) {
+      body = res().request().body();
+    }
+
+    sb.append(body).append("\n\n")
         .append("---ok-res---").append('\n')
         .append("headers: ").append('\n')
         .append(res().headers()).append('\n')
         .append("body: ").append('\n')
         .append(str()).append('\n')
-        .append("------------").append('\n')
-        .toString();
+        .append("------------").append('\n');
+    return sb.toString();
   }
 
 }
