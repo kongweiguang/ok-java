@@ -692,11 +692,12 @@ public final class Req {
 
   @Override
   public String toString() {
+    bf();
     return new StringBuilder()
         .append("---ok-req---").append('\n')
         .append("method: ").append(method()).append(' ').append("url: ").append(url()).append('\n')
         .append("headers: ").append('\n')
-        .append(headers()).append("\n")
+        .append(builder().build().headers()).append("\n")
         .append("body: ").append('\n')
         .append(strBody()).append('\n')
         .toString();

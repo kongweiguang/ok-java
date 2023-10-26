@@ -3,6 +3,8 @@ package io.github.kongweiguang.ok.sse;
 import io.github.kongweiguang.ok.Req;
 import io.github.kongweiguang.ok.Res;
 import java.util.Objects;
+import okhttp3.Request;
+import okhttp3.Request.Builder;
 import org.junit.jupiter.api.Test;
 
 public class SseTest {
@@ -44,10 +46,13 @@ public class SseTest {
   }
 
   public static void main(String[] args) {
-    final Req req = Req.get("http://www.baidu.com").header("k", "v").header("k1", "v1");
-    System.out.println(req);
-    final Res res = req.ok();
-    System.out.println(res.list());
-    System.out.println(11111);
+    final Builder builder = new Builder();
+    builder.url("http://www.baidu.com");
+    builder.addHeader("k","v");
+    final Request build = builder.build();
+    System.out.println(build.headers());
+    builder.addHeader("v","vvv");
+    final Request build1 = builder.build();
+    System.out.println("build1.headers() = " + build1.headers());
   }
 }
