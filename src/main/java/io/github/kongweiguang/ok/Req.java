@@ -270,7 +270,9 @@ public final class Req {
     ub.scheme(scheme());
     ub.host(host());
     ub.port(port());
-    url(ub.build().toString());
+    final HttpUrl httpUrl = ub.build();
+    builder().url(httpUrl);
+    url(httpUrl.toString());
   }
 
   private void addHeader() {

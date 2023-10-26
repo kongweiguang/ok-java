@@ -10,8 +10,7 @@ public class RetryTest {
 
   @Test
   void testRetry() {
-    final Res res = Req.get()
-        .url("http://localhost:8080/error")
+    final Res res = Req.get("http://localhost:8080/error")
         .query("a", "1")
         .retry(3)
         .ok();
@@ -20,8 +19,7 @@ public class RetryTest {
 
   @Test
   void testRetry2() {
-    final Res res = Req.get()
-        .url("http://localhost:8080/error")
+    final Res res = Req.get("http://localhost:8080/error")
         .query("a", "1")
         .retry(3, Duration.ofSeconds(2), (r, t) -> {
           final String str = r.str();
@@ -37,8 +35,7 @@ public class RetryTest {
   @Test
   void testRetry3() {
     //异步重试
-    final CompletableFuture<Res> res = Req.get()
-        .url("http://localhost:8080/error")
+    final CompletableFuture<Res> res = Req.get("http://localhost:8080/error")
         .query("a", "1")
         .retry(3)
         .okAsync();

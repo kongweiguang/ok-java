@@ -11,7 +11,7 @@ public class DowTest {
 
   @Test
   void testDow() {
-    final Res ok = Req.get().url("http://localhost:80/get_file").ok();
+    final Res ok = Req.get("http://localhost:80/get_file").ok();
 
     try {
       ok.file("d:\\k.txt");

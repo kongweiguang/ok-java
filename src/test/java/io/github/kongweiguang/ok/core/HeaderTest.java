@@ -10,8 +10,7 @@ public class HeaderTest {
 
   @Test
   void test1() throws Exception {
-    final Res res = Req.get()
-        .url("http://localhost:8080/header")
+    final Res res = Req.get("http://localhost:8080/header")
         //contentype
         .contentType(ContentType.json)
         //charset

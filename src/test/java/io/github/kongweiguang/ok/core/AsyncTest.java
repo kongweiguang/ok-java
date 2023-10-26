@@ -11,8 +11,7 @@ public class AsyncTest {
 
   @Test
   void test1() throws Exception {
-    final CompletableFuture<Res> future = Req.get()
-        .url("http://localhost:8080/get")
+    final CompletableFuture<Res> future = Req.get("http://localhost:8080/get")
         .query("a", "1")
         .success(r -> System.out.println(r.str()))
         .fail(System.out::println)

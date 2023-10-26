@@ -3,6 +3,7 @@ package io.github.kongweiguang.ok;
 import static java.util.Objects.isNull;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.TypeRef;
@@ -16,12 +17,15 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import kotlin.Pair;
 import okhttp3.Headers;
 import okhttp3.Response;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 /**
  * http的响应
@@ -93,6 +97,18 @@ public final class Res implements AutoCloseable {
     return res().receivedResponseAtMillis() - res().sentRequestAtMillis();
   }
 
+  public boolean isJsonObj() {
+    return JSON.isValidObject(bytes());
+  }
+
+  public boolean isJsonAry() {
+    return JSON.isValidArray(bytes());
+  }
+
+  public boolean isJson() {
+    return JSON.isValid(bytes());
+  }
+
   public byte[] bytes() {
     if (isNull(bt)) {
       try {
@@ -113,20 +129,53 @@ public final class Res implements AutoCloseable {
     return new String(bytes(), charset);
   }
 
-  public JSONObject jsonObj() {
-    return JSON.parseObject(str());
-  }
-
   public InputStream stream() {
     return new ByteArrayInputStream(bytes());
   }
 
+  public JSONObject jsonObj() {
+    if (isJsonObj()) {
+      return JSON.parseObject(str());
+    }
+
+    return JSONObject.of();
+  }
+
+  public JSONArray jsonArray() {
+    if (isJsonAry()) {
+      return JSON.parseArray(str());
+    }
+
+    return JSONArray.of();
+  }
+
+
   public <R> R obj(Class<R> clazz) {
-    return JSON.parseObject(bytes(), clazz);
+    if (isJson()) {
+      return JSON.parseObject(bytes(), clazz);
+    }
+
+    try {
+      return clazz.newInstance();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public <R> R obj(Type type) {
-    return JSON.parseObject(bytes(), type);
+    if (isJson()) {
+      return JSON.parseObject(bytes(), type);
+    }
+
+    Object obj = null;
+    final Class<?> rawType = ((ParameterizedTypeImpl) type).getRawType();
+    if (Objects.equals(rawType, List.class)) {
+      obj = new ArrayList<>();
+    } else if (Objects.equals(rawType, Map.class)) {
+      obj = new HashMap<>();
+    }
+
+    return (R) obj;
   }
 
   public Integer rInt() {

@@ -9,10 +9,9 @@ public class Test1 {
 
   @Test
   void test() throws Exception {
-    final Req req = Req.get();
+    final Req req = Req.get("www.baidu.com/get");
 
-    req.url("www.baidu.com/get")
-        .retry(2, Duration.ofSeconds(1), (r, t) -> true)
+    req.retry(2, Duration.ofSeconds(1), (r, t) -> true)
         .success(System.out::println)
         .fail(System.out::println);
 

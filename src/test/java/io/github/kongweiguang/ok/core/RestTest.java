@@ -10,8 +10,7 @@ public class RestTest {
 
   @Test
   void testGet() {
-    final Res res = Req.get()
-        .url("http://localhost:8080/get_string")
+    final Res res = Req.get("http://localhost:8080/get_string")
         .query("a", "1")
         .query("b", "2")
         .query("c", "3")

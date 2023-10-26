@@ -8,15 +8,14 @@ public class UrlTest {
 
   @Test
   void test1() throws Exception {
-    final Res res = Req.get()
-        .url("http://localhost:8080/get/one/two")
+    final Res res = Req.get("http://localhost:8080/get/one/two")
         .ok();
     System.out.println("res = " + res.str());
   }
 
   @Test
   void test2() {
-    final Res res = Req.get()
+    final Res res = Req.of()
         .scheme("http")
         .host("localhost")
         .port(8080)
@@ -31,8 +30,7 @@ public class UrlTest {
   @Test
   void test3() throws Exception {
     // http://localhost:8080/get/one/two
-    final Res res = Req.get()
-        .url("/get")
+    final Res res = Req.get("/get")
         .scheme("http")
         .host("localhost")
         .port(8080)

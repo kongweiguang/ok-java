@@ -8,8 +8,7 @@ public class TimeoutTest {
 
   @Test
   void test1() throws Exception {
-    final Res res = Req.get()
-        .url("http://localhost:8080/timeout")
+    final Res res = Req.get("http://localhost:8080/timeout")
         .timeout(3)
 //        .timeout(10, 10, 10)
         .ok();

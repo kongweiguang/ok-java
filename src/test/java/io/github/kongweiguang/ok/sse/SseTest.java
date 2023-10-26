@@ -44,10 +44,10 @@ public class SseTest {
   }
 
   public static void main(String[] args) {
-    final Req req = Req.get().url("http://www.baidu.com").header("k", "v").header("k1", "v1");
+    final Req req = Req.get("http://www.baidu.com").header("k", "v").header("k1", "v1");
     System.out.println(req);
     final Res res = req.ok();
-    System.out.println(res);
+    System.out.println(res.list());
     System.out.println(11111);
   }
 }

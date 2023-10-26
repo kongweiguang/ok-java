@@ -14,8 +14,7 @@ public class ProxyTest {
     Config.proxy(Type.SOCKS, "127.0.0.1", 80);
     Config.proxyAuthenticator("k", "pass");
 
-    final Res res = Req.get()
-        .url("http://localhost:8080/get/one/two")
+    final Res res = Req.get("http://localhost:8080/get/one/two")
         .query("a", "1")
         .ok();
   }
