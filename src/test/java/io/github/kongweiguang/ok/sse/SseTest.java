@@ -11,8 +11,7 @@ public class SseTest {
   @Test
   void test() throws InterruptedException {
 
-    Req.sse()
-        .url("localhost:8080/sse")
+    Req.sse("localhost:8080/sse")
         .sseListener(new SSEListener() {
           @Override
           public void event(Req req, SseEvent msg) {

@@ -9,8 +9,7 @@ public class WsTest {
   @Test
   void test() throws InterruptedException {
 
-    final Res ok = Req.ws()
-        .url("ws://websocket/test")
+    final Res ok = Req.ws("ws://websocket/test")
         .query("k", "v")
         .wsListener(new WSListener() {
           @Override

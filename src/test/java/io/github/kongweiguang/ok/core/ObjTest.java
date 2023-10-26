@@ -9,7 +9,7 @@ public class ObjTest {
   void test1() throws Exception {
 
     //自定义请求创建
-    Req.of();
+    Req.of().method(Method.GET).url("http://localhost:8080/get");
 
     //基本的http请求
     Req.get("http://localhost:8080/get");
