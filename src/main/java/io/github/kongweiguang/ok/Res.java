@@ -23,7 +23,6 @@ import java.util.StringJoiner;
 import kotlin.Pair;
 import okhttp3.Headers;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 /**
  * http的响应
@@ -98,13 +97,7 @@ public final class Res implements AutoCloseable {
   public byte[] bytes() {
     if (isNull(bt)) {
       try {
-        final ResponseBody body = res.body();
-
-        if (isNull(body)) {
-          this.bt = new byte[0];
-        } else {
-          this.bt = body.bytes();
-        }
+        this.bt = res().body().bytes();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
