@@ -13,8 +13,7 @@ public class FormTest {
   @Test
   void testForm() throws IOException {
     //application/x-www-form-urlencoded
-    final Res ok = Req.formUrlencoded()
-        .url("http://localhost:8080/post_form")
+    final Res ok = Req.formUrlencoded("http://localhost:8080/post_form")
         .form("a", "1")
         .form(new HashMap<String, String>() {{
           put("b", "2");
@@ -26,8 +25,7 @@ public class FormTest {
   @Test
   void test2() throws Exception {
     //multipart/form-data
-    final Res ok = Req.multipart()
-        .url("http://localhost:8080/post_mul_form")
+    final Res ok = Req.multipart("http://localhost:8080/post_mul_form")
         .file("k", "k.txt", Files.readAllBytes(Paths.get("D:\\k\\k.txt")))
         .form("a", "1")
         .form(new HashMap<String, String>() {{

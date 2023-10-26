@@ -1,28 +1,15 @@
 package io.github.kongweiguang.ok;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import io.github.kongweiguang.ok.core.Config;
-import io.github.kongweiguang.ok.core.Const;
-import io.github.kongweiguang.ok.core.ContentType;
-import io.github.kongweiguang.ok.core.Header;
-import io.github.kongweiguang.ok.core.MultiValueMap;
-import io.github.kongweiguang.ok.core.Timeout;
 import io.github.kongweiguang.ok.core.Util;
 import java.time.Duration;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
-import okhttp3.FormBody;
-import okhttp3.HttpUrl;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.internal.http.HttpMethod;
 import okhttp3.sse.EventSources;
 
 /**
@@ -38,8 +25,7 @@ public final class OK {
 
   private OK(final Req req) {
     this.C = Config.client();
-    this.builder = new Request.Builder();
-
+    this.builder = req.builder();
     req(req).retry(req.max() > 0);
   }
 
@@ -68,10 +54,7 @@ public final class OK {
 
 
   private CompletableFuture<Res> ojbk() {
-    bf();
-
     builder().tag(Req.class, req());
-
     if (reqType()) {
       return http0(new AtomicInteger(req().max()), req().delay(), req().predicate());
     }
@@ -148,113 +131,7 @@ public final class OK {
     }
   }
 
-  private void bf() {
-    addMethod();
-    addQuery();
-    addHeader();
-    addTimeout();
-  }
-
   private void addTimeout() {
-    builder().tag(Timeout.class, req().timeout());
-  }
-
-  private void addMethod() {
-    builder().method(req().method().name(), addBody());
-  }
-
-  private RequestBody addBody() {
-    RequestBody rb = null;
-
-    if (HttpMethod.permitsRequestBody(req().method().name())) {
-      if (req().isMul()) {
-        //multipart 格式提交
-        req().contentType(ContentType.multipart).form().forEach(req().mul()::addFormDataPart);
-
-        rb = req().mul().setType(MediaType.parse(req().contentType())).build();
-
-      } else if (req().isForm()) {
-        final FormBody.Builder b = new FormBody.Builder(req().charset());
-        //form_urlencoded 格式提交
-        req().contentType(ContentType.form_urlencoded).form().forEach(b::addEncoded);
-
-        rb = b.build();
-
-      } else {
-        //字符串提交
-        rb = RequestBody.create(req().strBody(), MediaType.parse(req().contentType()));
-
-      }
-    }
-
-    return rb;
-  }
-
-  private void addQuery() {
-
-    if (nonNull(req().url())) {
-
-      if (isNull(req().scheme())) {
-        req().scheme(req().url().getProtocol());
-      }
-
-      if (isNull(req().host())) {
-        req().host(req().url().getHost());
-      }
-
-      if (req().port() == 0) {
-        req().port(req().url().getPort() == -1 ? Const.port : req().url().getPort());
-      }
-
-      if (nonNull(req().url().getPath())) {
-        req().pathFirst(req().url().getPath());
-      }
-
-      Optional.ofNullable(req().url().getQuery())
-          .map(e -> e.split("&"))
-          .ifPresent(qr -> {
-            for (String part : qr) {
-              String[] kv = part.split("=");
-              if (kv.length > 1) {
-                req().query(kv[0], kv[1]);
-              }
-            }
-          });
-    }
-
-    final HttpUrl.Builder ub = new HttpUrl.Builder();
-
-    Optional.ofNullable(req().query())
-        .map(MultiValueMap::map)
-        .ifPresent(map -> map.forEach((k, v) ->
-            v.forEach(e -> ub.addEncodedQueryParameter(k, e))));
-
-    req().paths().forEach(ub::addPathSegments);
-
-    ub.scheme(req().scheme());
-    ub.host(req().host());
-    ub.port(req().port());
-
-    builder().url(ub.build());
-  }
-
-  private void addHeader() {
-
-    if (!req().headers().isEmpty()) {
-      req().headers().forEach(builder()::addHeader);
-    }
-
-    if (!req().cookie().isEmpty()) {
-      builder().addHeader(Header.cookie.v(), cookie2Str(req().cookie()));
-    }
-  }
-
-  private static String cookie2Str(Map<String, String> cookies) {
-    StringBuilder sb = new StringBuilder();
-
-    cookies.forEach((k, v) -> sb.append(k).append('=').append(v).append("; "));
-
-    return sb.toString();
   }
 
   private void ws0() {

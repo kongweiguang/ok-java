@@ -5,6 +5,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import com.alibaba.fastjson2.JSON;
+import io.github.kongweiguang.ok.core.Const;
 import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.Method;
@@ -23,13 +24,19 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import okhttp3.FormBody;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.Request;
+import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
 import okhttp3.WebSocketListener;
+import okhttp3.internal.http.HttpMethod;
 
 /**
  * 基于okhttp封装的http请求工具
@@ -39,6 +46,7 @@ import okhttp3.WebSocketListener;
 public final class Req {
 
   private ReqType typeEnum;
+  private final Request.Builder builder;
 
   //header
   private Method method;
@@ -52,7 +60,7 @@ public final class Req {
   private URL url;
   private String scheme;
   private String host;
-  private int port;
+  private int port = -1;
   private LinkedList<String> paths;
   private MultiValueMap<String, String> query;
 
@@ -84,6 +92,7 @@ public final class Req {
     this.charset = StandardCharsets.UTF_8;
     this.method = Method.GET;
     this.typeEnum = ReqType.http;
+    this.builder = new Builder();
   }
 
   public Req reqType(final ReqType typeEnum) {
@@ -96,52 +105,54 @@ public final class Req {
     return new Req();
   }
 
-  public static Req get() {
-    return of().method(Method.GET);
+  public static Req get(final String url) {
+    return of().method(Method.GET).url(url);
   }
 
-  public static Req post() {
-    return of().method(Method.POST);
+  public static Req post(final String url) {
+    return of().method(Method.POST).url(url);
   }
 
-  public static Req delete() {
-    return of().method(Method.DELETE);
+  public static Req delete(final String url) {
+    return of().method(Method.DELETE).url(url);
   }
 
-  public static Req put() {
-    return of().method(Method.PUT);
+  public static Req put(final String url) {
+    return of().method(Method.PUT).url(url);
   }
 
-  public static Req patch() {
-    return of().method(Method.PATCH);
+  public static Req patch(final String url) {
+    return of().method(Method.PATCH).url(url);
   }
 
-  public static Req head() {
-    return of().method(Method.HEAD);
+  public static Req head(final String url) {
+    return of().method(Method.HEAD).url(url);
   }
 
-  public static Req options() {
-    return of().method(Method.OPTIONS);
+  public static Req options(final String url) {
+    return of().method(Method.OPTIONS).url(url);
   }
 
-  public static Req trace() {
-    return of().method(Method.TRACE);
+  public static Req trace(final String url) {
+    return of().method(Method.TRACE).url(url);
   }
 
-  public static Req connect() {
-    return of().method(Method.CONNECT);
+  public static Req connect(final String url) {
+    return of().method(Method.CONNECT).url(url);
   }
 
-  public static Req formUrlencoded() {
+  public static Req formUrlencoded(final String url) {
     return of().method(Method.POST)
         .contentType(ContentType.form_urlencoded)
-        .formUrlencoded(true);
+        .formUrlencoded(true)
+        .url(url);
   }
 
-  public static Req multipart() {
+  public static Req multipart(final String url) {
     return of().method(Method.POST)
         .contentType(ContentType.multipart)
-        .multipart(true);
+        .multipart(true)
+        .url(url);
   }
 
   private Req formUrlencoded(final boolean mul) {
@@ -155,24 +166,132 @@ public final class Req {
   }
 
   //ws
-  public static Req ws() {
-    return of().reqType(ReqType.ws);
+  public static Req ws(final String url) {
+    return of().reqType(ReqType.ws).url(url);
   }
 
   //sse
-  public static Req sse() {
-    return of().reqType(ReqType.sse);
+  public static Req sse(final String url) {
+    return of().reqType(ReqType.sse).url(url);
   }
 
   //同步请求
   public Res ok() {
+    bf();
     return OK.ok(this);
   }
 
   //异步请求
   public CompletableFuture<Res> okAsync() {
+    bf();
     return OK.okAsync(this);
   }
+
+
+  private void bf() {
+    addMethod();
+    addQuery();
+    addHeader();
+  }
+
+
+  private void addMethod() {
+    builder().method(method().name(), addBody());
+  }
+
+  private RequestBody addBody() {
+    RequestBody rb = null;
+
+    if (HttpMethod.permitsRequestBody(method().name())) {
+      if (isMul()) {
+        //multipart 格式提交
+        contentType(ContentType.multipart).form().forEach(mul()::addFormDataPart);
+
+        rb = mul().setType(MediaType.parse(contentType())).build();
+
+      } else if (isForm()) {
+        final FormBody.Builder b = new FormBody.Builder(charset());
+        //form_urlencoded 格式提交
+        contentType(ContentType.form_urlencoded).form().forEach(b::addEncoded);
+
+        rb = b.build();
+
+      } else {
+        //字符串提交
+        rb = RequestBody.create(strBody(), MediaType.parse(contentType()));
+
+      }
+    }
+
+    return rb;
+  }
+
+  private void addQuery() {
+
+    if (nonNull(url())) {
+
+      if (isNull(scheme())) {
+        scheme(url().getProtocol());
+      }
+
+      if (isNull(host())) {
+        host(url().getHost());
+      }
+
+      if (port() == -1) {
+        port(url().getPort() == -1 ? Const.port : url().getPort());
+      }
+
+      if (nonNull(url().getPath())) {
+        pathFirst(url().getPath());
+      }
+
+      Optional.ofNullable(url().getQuery())
+          .map(e -> e.split("&"))
+          .ifPresent(qr -> {
+            for (String part : qr) {
+              String[] kv = part.split("=");
+              if (kv.length > 1) {
+                query(kv[0], kv[1]);
+              }
+            }
+          });
+    }
+
+    final HttpUrl.Builder ub = new HttpUrl.Builder();
+
+    Optional.ofNullable(query())
+        .map(MultiValueMap::map)
+        .ifPresent(map -> map.forEach((k, v) ->
+            v.forEach(e -> ub.addEncodedQueryParameter(k, e))));
+
+    paths().forEach(ub::addPathSegments);
+
+    ub.scheme(scheme());
+    ub.host(host());
+    ub.port(port());
+    url(ub.build().toString());
+  }
+
+  private void addHeader() {
+
+    if (!headers().isEmpty()) {
+      headers().forEach(builder()::addHeader);
+    }
+
+    if (!cookie().isEmpty()) {
+      builder().addHeader(Header.cookie.v(), cookie2Str(cookie()));
+    }
+  }
+
+  private static String cookie2Str(Map<String, String> cookies) {
+    StringBuilder sb = new StringBuilder();
+
+    cookies.forEach((k, v) -> sb.append(k).append('=').append(v).append("; "));
+
+    return sb.toString();
+  }
+
 
   //timeout，单位秒
   public Req timeout(int timeoutSeconds) {
@@ -231,13 +350,12 @@ public final class Req {
   }
 
   public Req contentType(final ContentType contentType) {
-    if (isNull(contentType)) {
-      return this;
+    if (nonNull(contentType)) {
+      this.contentType = contentType.v();
+
+      header(Header.content_type.v(), String.join(";charset=", contentType(), charset().name()));
     }
 
-    this.contentType = contentType.v();
-
-    header(Header.content_type.v(), String.join(";charset=", contentType(), charset().name()));
     return this;
   }
 
@@ -345,17 +463,22 @@ public final class Req {
   }
 
   //body
-  public Req body(final String json) {
+  public Req json(final String json) {
     return body(json, ContentType.json);
   }
 
-  public Req body(final Object json) {
+  public Req json(final Object json) {
     return body(JSON.toJSONString(json), ContentType.json);
   }
 
-  public Req body(final String obj, final ContentType contentType) {
+  public Req body(final String str) {
+    this.strBody = str;
+    return this;
+  }
+
+  public Req body(final String str, final ContentType contentType) {
     contentType(contentType);
-    this.strBody = obj;
+    this.strBody = str;
     return this;
   }
 
@@ -404,8 +527,16 @@ public final class Req {
     return this;
   }
 
-
   //get
+
+  public ReqType typeEnum() {
+    return typeEnum;
+  }
+
+  Builder builder() {
+    return builder;
+  }
+
   public String scheme() {
     return scheme;
   }
