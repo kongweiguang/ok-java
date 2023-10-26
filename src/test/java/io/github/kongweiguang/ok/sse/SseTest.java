@@ -43,4 +43,12 @@ public class SseTest {
 
     wait();
   }
+
+  public static void main(String[] args) {
+    final Req req = Req.get().url("http://www.baidu.com").header("k", "v").header("k1", "v1");
+    System.out.println(req);
+    final Res res = req.ok();
+    System.out.println(res);
+    System.out.println(11111);
+  }
 }

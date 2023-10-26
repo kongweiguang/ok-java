@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import kotlin.Pair;
 import okhttp3.Headers;
 import okhttp3.Response;
@@ -164,8 +163,13 @@ public final class Res implements AutoCloseable {
 
   @Override
   public String toString() {
-    return new StringJoiner(", ", Res.class.getSimpleName() + "[", "]")
-        .add("res=" + res())
+    return new StringBuilder()
+        .append("---ok-res---").append("\n")
+        .append("res protocol: ").append(res().protocol()).append('\n')
+        .append("res headers: ").append('\n')
+        .append(res().headers()).append("\n")
+        .append("res body: ").append('\n')
+        .append(str()).append('\n')
         .toString();
   }
 

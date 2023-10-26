@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -529,9 +528,13 @@ public final class Req {
 
   @Override
   public String toString() {
-    return new StringJoiner(", ", Req.class.getSimpleName() + "[", "]").add("method=" + method)
-        .add("url=" + url)
-        .add("strBody='" + strBody + "'")
+    return new StringBuilder()
+        .append("---ok-req---").append('\n')
+        .append("method: ").append(method()).append(' ').append("url: ").append(url()).append('\n')
+        .append("headers: ").append('\n')
+        .append(headers()).append("\n")
+        .append("body: ").append('\n')
+        .append(strBody()).append('\n')
         .toString();
   }
 }
