@@ -37,7 +37,7 @@ import okhttp3.WebSocketListener;
  *
  * @author kongweiguang
  */
-public class Req {
+public final class Req {
 
   private ReqType typeEnum;
 
