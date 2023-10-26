@@ -17,15 +17,12 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import kotlin.Pair;
 import okhttp3.Headers;
 import okhttp3.Response;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 /**
  * http的响应
@@ -155,27 +152,14 @@ public final class Res implements AutoCloseable {
       return JSON.parseObject(bytes(), clazz);
     }
 
-    try {
-      return clazz.newInstance();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return null;
   }
 
   public <R> R obj(Type type) {
     if (isJson()) {
       return JSON.parseObject(bytes(), type);
     }
-
-    Object obj = null;
-    final Class<?> rawType = ((ParameterizedTypeImpl) type).getRawType();
-    if (Objects.equals(rawType, List.class)) {
-      obj = new ArrayList<>();
-    } else if (Objects.equals(rawType, Map.class)) {
-      obj = new HashMap<>();
-    }
-
-    return (R) obj;
+    return null;
   }
 
   public Integer rInt() {
