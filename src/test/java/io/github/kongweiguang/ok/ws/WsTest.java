@@ -2,12 +2,13 @@ package io.github.kongweiguang.ok.ws;
 
 import io.github.kongweiguang.ok.Req;
 import io.github.kongweiguang.ok.Res;
+import io.github.kongweiguang.ok.core.Util;
 import org.junit.jupiter.api.Test;
 
 public class WsTest {
 
   @Test
-  void test() throws InterruptedException {
+  void test() {
 
     final Res ok = Req.ws("ws://websocket/test")
         .query("k", "v")
@@ -44,7 +45,7 @@ public class WsTest {
         })
         .ok();
     //res == null
-    wait();
+    Util.sync(this);
   }
 
 }

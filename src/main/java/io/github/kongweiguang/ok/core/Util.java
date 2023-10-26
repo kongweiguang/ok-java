@@ -60,4 +60,11 @@ public final class Util {
 
     return false;
   }
+
+  public static void sync(final Object obj) {
+    try {
+      obj.wait();
+    } catch (InterruptedException ignored) {
+    }
+  }
 }

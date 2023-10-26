@@ -2,9 +2,8 @@ package io.github.kongweiguang.ok.sse;
 
 import io.github.kongweiguang.ok.Req;
 import io.github.kongweiguang.ok.Res;
+import io.github.kongweiguang.ok.core.Util;
 import java.util.Objects;
-import okhttp3.Request;
-import okhttp3.Request.Builder;
 import org.junit.jupiter.api.Test;
 
 public class SseTest {
@@ -42,17 +41,9 @@ public class SseTest {
         })
         .ok();
 
-    wait();
+    Util.sync(this);
   }
 
   public static void main(String[] args) {
-    final Builder builder = new Builder();
-    builder.url("http://www.baidu.com");
-    builder.addHeader("k","v");
-    final Request build = builder.build();
-    System.out.println(build.headers());
-    builder.addHeader("v","vvv");
-    final Request build1 = builder.build();
-    System.out.println("build1.headers() = " + build1.headers());
   }
 }
