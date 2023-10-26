@@ -180,18 +180,16 @@ public final class Req {
 
   //同步请求
   public Res ok() {
-    bf();
     return OK.ok(this);
   }
 
   //异步请求
   public CompletableFuture<Res> okAsync() {
-    bf();
     return OK.okAsync(this);
   }
 
 
-  private void bf() {
+  void bf() {
     addMethod();
     addQuery();
     addHeader();
@@ -231,16 +229,8 @@ public final class Req {
     return rb;
   }
 
-  //判断时候添加过url
-  private boolean isQuery;
 
   private void addQuery() {
-    if (isQuery) {
-      return;
-    }
-
-    isQuery = true;
-
     if (nonNull(url())) {
 
       if (isNull(scheme())) {
@@ -285,9 +275,7 @@ public final class Req {
     ub.port(port());
 
     final HttpUrl httpUrl = ub.build();
-
     builder().url(httpUrl);
-
     this.url = httpUrl.url();
   }
 
@@ -562,31 +550,31 @@ public final class Req {
 
 
   //get
-  public Builder builder() {
+  Builder builder() {
     return builder;
   }
 
-  public ReqType reqType() {
+  ReqType reqType() {
     return typeEnum;
   }
 
-  public Method method() {
+  private Method method() {
     return method;
   }
 
-  public String scheme() {
+  private String scheme() {
     return scheme;
   }
 
-  public String host() {
+  private String host() {
     return host;
   }
 
-  public int port() {
+  private int port() {
     return port;
   }
 
-  public LinkedList<String> paths() {
+  private LinkedList<String> paths() {
     if (isNull(paths)) {
       paths = new LinkedList<>();
     }
@@ -594,24 +582,23 @@ public final class Req {
     return paths;
   }
 
-  public URL url() {
-    addQuery();
+  private URL url() {
     return url;
   }
 
-  public String strBody() {
+  String strBody() {
     return strBody;
   }
 
-  public String contentType() {
+  private String contentType() {
     return contentType;
   }
 
-  public Charset charset() {
+  private Charset charset() {
     return charset;
   }
 
-  public MultiValueMap<String, String> query() {
+  private MultiValueMap<String, String> query() {
     if (isNull(query)) {
       query = new MultiValueMap<>();
     }
@@ -619,7 +606,7 @@ public final class Req {
     return query;
   }
 
-  public Map<String, String> form() {
+  private Map<String, String> form() {
     if (isNull(form)) {
       form = new HashMap<>();
     }
@@ -627,7 +614,7 @@ public final class Req {
     return form;
   }
 
-  public Map<String, String> cookie() {
+  private Map<String, String> cookie() {
     if (isNull(cookie)) {
       cookie = new HashMap<>();
     }
@@ -635,38 +622,38 @@ public final class Req {
     return cookie;
   }
 
-  public MultipartBody.Builder mul() {
+  private MultipartBody.Builder mul() {
     if (isNull(mul)) {
       mul = new MultipartBody.Builder();
     }
     return mul;
   }
 
-  public int max() {
+  int max() {
     return max;
   }
 
-  public Duration delay() {
+  Duration delay() {
     return delay;
   }
 
-  public Consumer<Res> success() {
+  Consumer<Res> success() {
     return success;
   }
 
-  public Consumer<Throwable> fail() {
+  Consumer<Throwable> fail() {
     return fail;
   }
 
-  public BiPredicate<Res, Throwable> predicate() {
+  BiPredicate<Res, Throwable> predicate() {
     return predicate;
   }
 
-  public Timeout timeout() {
+  private Timeout timeout() {
     return timeout;
   }
 
-  public Map<String, String> headers() {
+  private Map<String, String> headers() {
     if (isNull(headers)) {
       this.headers = new HashMap<>();
     }
@@ -674,32 +661,20 @@ public final class Req {
     return headers;
   }
 
-  public WebSocketListener wsListener() {
+  WebSocketListener wsListener() {
     return wsListener;
   }
 
-  public SSEListener sseListener() {
+  SSEListener sseListener() {
     return sseListener;
   }
 
-  public boolean isMul() {
+  private boolean isMul() {
     return multipart;
   }
 
-  public boolean isForm() {
+  private boolean isForm() {
     return formUrlencoded;
   }
 
-  @Override
-  public String toString() {
-    bf();
-    return new StringBuilder()
-        .append("---ok-req---").append('\n')
-        .append("method: ").append(method()).append(' ').append("url: ").append(url()).append('\n')
-        .append("headers: ").append('\n')
-        .append(builder().build().headers()).append("\n")
-        .append("body: ").append('\n')
-        .append(strBody()).append('\n')
-        .toString();
-  }
 }

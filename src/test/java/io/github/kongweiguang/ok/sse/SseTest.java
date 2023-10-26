@@ -44,6 +44,4 @@ public class SseTest {
     Util.sync(this);
   }
 
-  public static void main(String[] args) {
-  }
 }
