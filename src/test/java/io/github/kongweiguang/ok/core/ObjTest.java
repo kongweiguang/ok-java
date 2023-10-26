@@ -15,6 +15,7 @@ public class ObjTest {
     Req.get("http://localhost:8080/get");
     Req.post("http://localhost:8080/post");
     Req.delete("http://localhost:8080/delete");
+    Req.put("http://localhost:8080/put");
     Req.patch("http://localhost:8080/patch");
     Req.head("http://localhost:8080/head");
     Req.options("http://localhost:8080/options");

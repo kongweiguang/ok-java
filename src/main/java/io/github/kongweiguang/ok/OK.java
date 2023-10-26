@@ -18,14 +18,14 @@ import okhttp3.sse.EventSources;
 public final class OK {
 
   private final OkHttpClient C;
-  private final Request.Builder builder;
+  private final Request request;
   private Req req;
   private boolean async;
   private boolean retry;
 
   private OK(final Req req) {
     this.C = Config.client();
-    this.builder = req.builder();
+    this.request = req.builder().build();
     req.bf();
     req(req).retry(req.max() > 0);
   }
@@ -126,7 +126,7 @@ public final class OK {
 
   private Res execute() {
     try {
-      return Res.of(client().newCall(builder().build()).execute());
+      return Res.of(client().newCall(request()).execute());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -134,11 +134,11 @@ public final class OK {
 
 
   private void ws0() {
-    client().newWebSocket(builder().build(), req().wsListener());
+    client().newWebSocket(request(), req().wsListener());
   }
 
   private void sse0() {
-    EventSources.createFactory(client()).newEventSource(builder().build(), req().sseListener());
+    EventSources.createFactory(client()).newEventSource(request(), req().sseListener());
   }
 
 
@@ -162,8 +162,8 @@ public final class OK {
     return C;
   }
 
-  private Request.Builder builder() {
-    return builder;
+  private Request request() {
+    return request;
   }
 
   private Req req() {

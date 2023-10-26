@@ -10,7 +10,8 @@ public final class Util {
   private Util() {
   }
 
-  public static String replacePath(String path) {
+  //移除第一个斜杠
+  public static String removeFirstSlash(String path) {
     if (isNull(path)) {
       return "";
     }
@@ -21,6 +22,7 @@ public final class Util {
     return path;
   }
 
+  //url校验
   public static String urlRegex(String url) {
     if (isNull(url) || Objects.equals("", url)) {
       url = "/";

@@ -51,7 +51,6 @@ public final class Req {
   //header
   private Method method;
   private Timeout timeout;
-  private Map<String, String> headers;
   private Map<String, String> cookie;
   private String contentType;
   private Charset charset;
@@ -147,15 +146,13 @@ public final class Req {
   public static Req formUrlencoded(final String url) {
     return of(url).method(Method.POST)
         .contentType(ContentType.form_urlencoded)
-        .formUrlencoded(true)
-        ;
+        .formUrlencoded(true);
   }
 
   public static Req multipart(final String url) {
     return of(url).method(Method.POST)
         .contentType(ContentType.multipart)
-        .multipart(true)
-        ;
+        .multipart(true);
   }
 
   private Req formUrlencoded(final boolean mul) {
@@ -192,7 +189,7 @@ public final class Req {
   void bf() {
     addMethod();
     addQuery();
-    addHeader();
+    addCookie();
 
     builder().tag(Req.class, this);
   }
@@ -208,20 +205,27 @@ public final class Req {
     if (HttpMethod.permitsRequestBody(method().name())) {
       //multipart 格式提交
       if (isMul()) {
+
         form().forEach(mul()::addFormDataPart);
 
         rb = mul().setType(MediaType.parse(contentType())).build();
 
-      } else if (isForm()) {
+      }
+      //form_urlencoded 格式提交
+      else if (isForm()) {
+
         final FormBody.Builder b = new FormBody.Builder(charset());
-        //form_urlencoded 格式提交
         form().forEach(b::addEncoded);
 
         rb = b.build();
 
-      } else {
-        //字符串提交
-        rb = RequestBody.create(strBody(), MediaType.parse(contentType()));
+      }
+      //字符串提交
+      else {
+
+        if (nonNull(strBody())) {
+          rb = RequestBody.create(strBody(), MediaType.parse(contentType()));
+        }
 
       }
     }
@@ -231,59 +235,48 @@ public final class Req {
 
 
   private void addQuery() {
-    if (nonNull(url())) {
+    final HttpUrl.Builder ub = new HttpUrl.Builder();
 
-      if (isNull(scheme())) {
-        scheme(url().getProtocol());
-      }
-
-      if (isNull(host())) {
-        host(url().getHost());
-      }
-
-      if (port() == -1) {
-        port(url().getPort() == -1 ? Const.port : url().getPort());
-      }
-
-      if (nonNull(url().getPath())) {
-        pathFirst(url().getPath());
-      }
-
-      Optional.ofNullable(url().getQuery())
-          .map(e -> e.split("&"))
-          .ifPresent(qr -> {
-            for (String part : qr) {
-              String[] kv = part.split("=");
-              if (kv.length > 1) {
-                query(kv[0], kv[1]);
-              }
-            }
-          });
+    if (isNull(scheme())) {
+      ub.scheme(url().getProtocol());
     }
 
-    final HttpUrl.Builder ub = new HttpUrl.Builder();
+    if (isNull(host())) {
+      ub.host(url().getHost());
+    }
+
+    if (port() == -1) {
+      ub.port(url().getPort() == -1 ? Const.port : url().getPort());
+    }
+
+    if (nonNull(url().getPath())) {
+      ub.addPathSegments(Util.removeFirstSlash(url().getPath()));
+    }
+
+    Optional.ofNullable(url().getQuery())
+        .map(e -> e.split("&"))
+        .ifPresent(qr -> {
+          for (String part : qr) {
+            String[] kv = part.split("=");
+            if (kv.length > 1) {
+              ub.addEncodedQueryParameter(kv[0], kv[1]);
+            }
+          }
+        });
 
     Optional.ofNullable(query)
         .map(MultiValueMap::map)
         .ifPresent(map -> map.forEach((k, v) ->
             v.forEach(e -> ub.addEncodedQueryParameter(k, e))));
 
-    paths().forEach(ub::addPathSegments);
+    if (nonNull(paths)) {
+      paths().forEach(ub::addPathSegments);
+    }
 
-    ub.scheme(scheme());
-    ub.host(host());
-    ub.port(port());
-
-    final HttpUrl httpUrl = ub.build();
-    builder().url(httpUrl);
-    this.url = httpUrl.url();
+    builder().url(ub.build());
   }
 
-  private void addHeader() {
-
-    if (nonNull(headers)) {
-      headers().forEach(builder()::addHeader);
-    }
+  private void addCookie() {
 
     if (nonNull(cookie)) {
       builder().addHeader(Header.cookie.v(), cookie2Str(cookie()));
@@ -326,7 +319,7 @@ public final class Req {
   //header
   public Req headers(final Map<String, String> headers) {
     if (nonNull(headers)) {
-      headers().putAll(headers);
+      headers.forEach(builder()::addHeader);
     }
 
     return this;
@@ -334,7 +327,7 @@ public final class Req {
 
   public Req header(final String name, final String value) {
     if (nonNull(name) && nonNull(value)) {
-      headers().put(name, value);
+      builder.header(name, value);
     }
 
     return this;
@@ -373,12 +366,12 @@ public final class Req {
   }
 
   public Req ua(final String ua) {
-    headers().put(Header.user_agent.v(), ua);
+    builder().header(Header.user_agent.v(), ua);
     return this;
   }
 
   public Req auth(final String auth) {
-    headers().put(Header.authorization.v(), auth);
+    builder().header(Header.authorization.v(), auth);
     return this;
   }
 
@@ -414,15 +407,7 @@ public final class Req {
 
   public Req path(final String path) {
     if (nonNull(path)) {
-      paths().add(Util.replacePath(path));
-    }
-
-    return this;
-  }
-
-  public Req pathFirst(final String path) {
-    if (nonNull(path)) {
-      paths().addFirst(Util.replacePath(path));
+      paths().add(Util.removeFirstSlash(path));
     }
 
     return this;
@@ -558,23 +543,23 @@ public final class Req {
     return typeEnum;
   }
 
-  private Method method() {
+  Method method() {
     return method;
   }
 
-  private String scheme() {
+  String scheme() {
     return scheme;
   }
 
-  private String host() {
+  String host() {
     return host;
   }
 
-  private int port() {
+  int port() {
     return port;
   }
 
-  private LinkedList<String> paths() {
+  LinkedList<String> paths() {
     if (isNull(paths)) {
       paths = new LinkedList<>();
     }
@@ -582,7 +567,7 @@ public final class Req {
     return paths;
   }
 
-  private URL url() {
+  URL url() {
     return url;
   }
 
@@ -590,15 +575,15 @@ public final class Req {
     return strBody;
   }
 
-  private String contentType() {
+  String contentType() {
     return contentType;
   }
 
-  private Charset charset() {
+  Charset charset() {
     return charset;
   }
 
-  private MultiValueMap<String, String> query() {
+  MultiValueMap<String, String> query() {
     if (isNull(query)) {
       query = new MultiValueMap<>();
     }
@@ -606,7 +591,7 @@ public final class Req {
     return query;
   }
 
-  private Map<String, String> form() {
+  Map<String, String> form() {
     if (isNull(form)) {
       form = new HashMap<>();
     }
@@ -614,7 +599,7 @@ public final class Req {
     return form;
   }
 
-  private Map<String, String> cookie() {
+  Map<String, String> cookie() {
     if (isNull(cookie)) {
       cookie = new HashMap<>();
     }
@@ -622,7 +607,7 @@ public final class Req {
     return cookie;
   }
 
-  private MultipartBody.Builder mul() {
+  MultipartBody.Builder mul() {
     if (isNull(mul)) {
       mul = new MultipartBody.Builder();
     }
@@ -649,16 +634,8 @@ public final class Req {
     return predicate;
   }
 
-  private Timeout timeout() {
+  Timeout timeout() {
     return timeout;
-  }
-
-  private Map<String, String> headers() {
-    if (isNull(headers)) {
-      this.headers = new HashMap<>();
-    }
-
-    return headers;
   }
 
   WebSocketListener wsListener() {
@@ -669,11 +646,11 @@ public final class Req {
     return sseListener;
   }
 
-  private boolean isMul() {
+  boolean isMul() {
     return multipart;
   }
 
-  private boolean isForm() {
+  boolean isForm() {
     return formUrlencoded;
   }
 
