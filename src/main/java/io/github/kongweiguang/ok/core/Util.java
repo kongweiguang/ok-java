@@ -1,6 +1,7 @@
 package io.github.kongweiguang.ok.core;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 import java.util.Objects;
 
@@ -25,7 +26,7 @@ public final class Util {
       url = "/";
     }
 
-    if (!url.startsWith(Const._http) && !url.startsWith(Const._https)) {
+    if (!isHttp(url) && !isHttps(url)) {
       if (url.startsWith("/")) {
         url = Const._http + Const.localhost + url;
       } else {
@@ -36,7 +37,7 @@ public final class Util {
     return url;
   }
 
-  public static void sleep(long millis) {
+  public static void sleep(final long millis) {
     try {
       Thread.sleep(millis);
     } catch (InterruptedException ignored) {
@@ -44,4 +45,19 @@ public final class Util {
     }
   }
 
+  public static boolean isHttp(final String url) {
+    if (nonNull(url)) {
+      return url.toLowerCase().startsWith(Const._http);
+    }
+
+    return false;
+  }
+
+  public static boolean isHttps(final String url) {
+    if (nonNull(url)) {
+      return url.toLowerCase().startsWith(Const._https);
+    }
+
+    return false;
+  }
 }
