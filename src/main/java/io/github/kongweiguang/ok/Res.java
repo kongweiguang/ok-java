@@ -209,14 +209,13 @@ public final class Res implements AutoCloseable {
       body = res().request().body();
     }
 
-    sb.append(body).append("\n\n")
+    return sb.append(body).append("\n\n")
         .append("---ok-res---").append('\n')
         .append("headers: ").append('\n')
         .append(res().headers()).append('\n')
         .append("body: ").append('\n')
         .append(str()).append('\n')
-        .append("------------").append('\n');
-    return sb.toString();
+        .append("------------").append('\n').toString();
   }
 
 }
