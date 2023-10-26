@@ -4,10 +4,10 @@ import io.github.kongweiguang.ok.Req;
 import io.github.kongweiguang.ok.Res;
 import org.junit.jupiter.api.Test;
 
-public class SendTest {
+public class WsTest {
 
   @Test
-  void test() {
+  void test() throws InterruptedException {
 
     final Res ok = Req.ws()
         .url("ws://websocket/test")
@@ -45,6 +45,7 @@ public class SendTest {
         })
         .ok();
     //res == null
+    wait();
   }
 
 }

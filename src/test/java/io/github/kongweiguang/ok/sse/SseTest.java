@@ -5,7 +5,7 @@ import io.github.kongweiguang.ok.Res;
 import java.util.Objects;
 import org.junit.jupiter.api.Test;
 
-public class Test1 {
+public class SseTest {
 
 
   @Test
@@ -41,6 +41,6 @@ public class Test1 {
         })
         .ok();
 
-    Thread.sleep(10000);
+    wait();
   }
 }
