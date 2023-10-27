@@ -21,10 +21,10 @@
 
 # 特点
 
-* 非常轻量，代码简单，大小只有15k
+* 非常轻量，代码简单，大小只有17k
 * 链式编程，api友好，用的很爽
 * 支持http，ws，sse调用
-* 支持jdk8以上所有的项目
+* 支持jdk8
 
 # 使用方式
 
@@ -97,6 +97,7 @@ public class ObjTest {
 url添加有两种方式，可以混合使用，如果url和构建函数里面都有值，按构建函数里面为主
 
 - 直接使用url方法
+
 ```java
 
 public class UrlTest {
@@ -108,7 +109,7 @@ public class UrlTest {
     System.out.println("res = " + res.str());
   }
 
-  
+
   // 使用构建方法
   @Test
   void test2() {
@@ -123,7 +124,7 @@ public class UrlTest {
     System.out.println("res.str() = " + res.str());
     // http://localhost:8080/get/one/two
   }
-  
+
   //混合使用
   @Test
   void test3() throws Exception {
@@ -412,7 +413,9 @@ public class ProxyTest {
 
 }
 ```
+
 ## 下载
+
 ```java
 public class DowTest {
 
