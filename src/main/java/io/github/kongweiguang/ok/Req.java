@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -45,13 +44,13 @@ import okhttp3.internal.http.HttpMethod;
  */
 public final class Req {
 
-  private ReqType typeEnum;
+  private ReqType reqType;
   private final Request.Builder builder;
 
   //header
   private Method method;
   private Timeout timeout;
-  private Map<String, String> cookie;
+  private Map<String, String> cookieMap;
   private String contentType;
   private Charset charset;
 
@@ -61,15 +60,15 @@ public final class Req {
   private String host;
   private int port = -1;
   private LinkedList<String> paths;
-  private MultiValueMap<String, String> query;
+  private MultiValueMap<String, String> queryMap;
 
   //body
   private String strBody;
 
   //form
-  private boolean formUrlencoded;
+  private boolean formUrl;
   private boolean multipart;
-  private Map<String, String> form;
+  private Map<String, String> formMap;
   private MultipartBody.Builder mul;
 
   //async
@@ -89,12 +88,12 @@ public final class Req {
   private Req() {
     this.charset = StandardCharsets.UTF_8;
     this.method = Method.GET;
-    this.typeEnum = ReqType.http;
+    this.reqType = ReqType.http;
     this.builder = new Builder();
   }
 
   public Req reqType(final ReqType typeEnum) {
-    this.typeEnum = typeEnum;
+    this.reqType = typeEnum;
     return this;
   }
 
@@ -156,7 +155,7 @@ public final class Req {
   }
 
   private Req formUrlencoded(final boolean mul) {
-    this.formUrlencoded = mul;
+    this.formUrl = mul;
     return this;
   }
 
@@ -206,16 +205,21 @@ public final class Req {
       //multipart 格式提交
       if (isMul()) {
 
-        form().forEach(mul()::addFormDataPart);
+        if (nonNull(formMap)) {
+          form().forEach(mul()::addFormDataPart);
+        }
 
         rb = mul().setType(MediaType.parse(contentType())).build();
 
       }
       //form_urlencoded 格式提交
-      else if (isForm()) {
+      else if (getFormMap()) {
 
         final FormBody.Builder b = new FormBody.Builder(charset());
-        form().forEach(b::addEncoded);
+
+        if (nonNull(formMap)) {
+          form().forEach(b::addEncoded);
+        }
 
         rb = b.build();
 
@@ -264,7 +268,7 @@ public final class Req {
           }
         });
 
-    Optional.ofNullable(query)
+    Optional.ofNullable(queryMap)
         .map(MultiValueMap::map)
         .ifPresent(map -> map.forEach((k, v) ->
             v.forEach(e -> ub.addEncodedQueryParameter(k, e))));
@@ -278,9 +282,10 @@ public final class Req {
 
   private void addCookie() {
 
-    if (nonNull(cookie)) {
+    if (nonNull(cookieMap)) {
       builder().addHeader(Header.cookie.v(), cookie2Str(cookie()));
     }
+
   }
 
   private static String cookie2Str(Map<String, String> cookies) {
@@ -347,7 +352,6 @@ public final class Req {
     }
 
     return this;
-
   }
 
   public Req contentType(final ContentType contentType) {
@@ -414,11 +418,14 @@ public final class Req {
   }
 
   public Req query(final String k, final String v) {
-    query().put(k, v);
+    if (nonNull(k) && nonNull(v)) {
+      query().put(k, v);
+    }
+
     return this;
   }
 
-  public Req query(final String k, final List<String> vs) {
+  public Req query(final String k, final Iterable<String> vs) {
     if (nonNull(k) && nonNull(vs)) {
       for (String v : vs) {
         query().put(k, v);
@@ -450,7 +457,7 @@ public final class Req {
   }
 
   public Req form(final String name, final String value) {
-    if (isForm() || isMul()) {
+    if (getFormMap() || isMul()) {
       form().put(name, value);
     }
 
@@ -458,7 +465,7 @@ public final class Req {
   }
 
   public Req form(final Map<String, String> form) {
-    if (isForm() || isMul()) {
+    if (getFormMap() || isMul()) {
       form().putAll(form);
     }
 
@@ -540,7 +547,7 @@ public final class Req {
   }
 
   ReqType reqType() {
-    return typeEnum;
+    return reqType;
   }
 
   Method method() {
@@ -584,27 +591,27 @@ public final class Req {
   }
 
   MultiValueMap<String, String> query() {
-    if (isNull(query)) {
-      query = new MultiValueMap<>();
+    if (isNull(queryMap)) {
+      queryMap = new MultiValueMap<>();
     }
 
-    return query;
+    return queryMap;
   }
 
   Map<String, String> form() {
-    if (isNull(form)) {
-      form = new HashMap<>();
+    if (isNull(formMap)) {
+      formMap = new HashMap<>();
     }
 
-    return form;
+    return formMap;
   }
 
   Map<String, String> cookie() {
-    if (isNull(cookie)) {
-      cookie = new HashMap<>();
+    if (isNull(cookieMap)) {
+      cookieMap = new HashMap<>();
     }
 
-    return cookie;
+    return cookieMap;
   }
 
   MultipartBody.Builder mul() {
@@ -650,8 +657,8 @@ public final class Req {
     return multipart;
   }
 
-  boolean isForm() {
-    return formUrlencoded;
+  boolean getFormMap() {
+    return formUrl;
   }
 
   @Override
