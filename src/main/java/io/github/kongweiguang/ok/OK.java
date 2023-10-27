@@ -25,8 +25,9 @@ public final class OK {
 
   private OK(final Req req) {
     this.C = Config.client();
-    this.request = req.builder().build();
     req.bf();
+
+    this.request = req.builder().build();
     req(req).retry(req.max() > 0);
   }
 
