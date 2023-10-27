@@ -84,6 +84,8 @@ public final class Req {
   private WSListener wsListener;
   private SSEListener sseListener;
 
+  //dami
+  private Map<Object, Object> attachment;
 
   private Req() {
     this.charset = StandardCharsets.UTF_8;
@@ -541,32 +543,45 @@ public final class Req {
   }
 
 
+  //attachment
+  public Map<Object, Object> attachment() {
+    if (isNull(attachment)) {
+      this.attachment = new HashMap<>();
+    }
+    return attachment;
+  }
+
+  public Req setAttachment(final Object k, final Object v) {
+    attachment().put(k, v);
+    return this;
+  }
+
   //get
-  Builder builder() {
+  public Builder builder() {
     return builder;
   }
 
-  ReqType reqType() {
+  public ReqType reqType() {
     return reqType;
   }
 
-  Method method() {
+  public Method method() {
     return method;
   }
 
-  String scheme() {
+  public String scheme() {
     return scheme;
   }
 
-  String host() {
+  public String host() {
     return host;
   }
 
-  int port() {
+  public int port() {
     return port;
   }
 
-  LinkedList<String> paths() {
+  public LinkedList<String> paths() {
     if (isNull(paths)) {
       paths = new LinkedList<>();
     }
@@ -574,23 +589,23 @@ public final class Req {
     return paths;
   }
 
-  URL url() {
+  public URL url() {
     return url;
   }
 
-  String strBody() {
+  public String strBody() {
     return strBody;
   }
 
-  String contentType() {
+  public String contentType() {
     return contentType;
   }
 
-  Charset charset() {
+  public Charset charset() {
     return charset;
   }
 
-  MultiValueMap<String, String> query() {
+  public MultiValueMap<String, String> query() {
     if (isNull(queryMap)) {
       queryMap = new MultiValueMap<>();
     }
@@ -598,7 +613,7 @@ public final class Req {
     return queryMap;
   }
 
-  Map<String, String> form() {
+  public Map<String, String> form() {
     if (isNull(formMap)) {
       formMap = new HashMap<>();
     }
@@ -606,7 +621,7 @@ public final class Req {
     return formMap;
   }
 
-  Map<String, String> cookie() {
+  public Map<String, String> cookie() {
     if (isNull(cookieMap)) {
       cookieMap = new HashMap<>();
     }
@@ -614,50 +629,50 @@ public final class Req {
     return cookieMap;
   }
 
-  MultipartBody.Builder mul() {
+  public MultipartBody.Builder mul() {
     if (isNull(mul)) {
       mul = new MultipartBody.Builder();
     }
     return mul;
   }
 
-  int max() {
+  public int max() {
     return max;
   }
 
-  Duration delay() {
+  public Duration delay() {
     return delay;
   }
 
-  Consumer<Res> success() {
+  public Consumer<Res> success() {
     return success;
   }
 
-  Consumer<Throwable> fail() {
+  public Consumer<Throwable> fail() {
     return fail;
   }
 
-  BiPredicate<Res, Throwable> predicate() {
+  public BiPredicate<Res, Throwable> predicate() {
     return predicate;
   }
 
-  Timeout timeout() {
+  public Timeout timeout() {
     return timeout;
   }
 
-  WebSocketListener wsListener() {
+  public WebSocketListener wsListener() {
     return wsListener;
   }
 
-  SSEListener sseListener() {
+  public SSEListener sseListener() {
     return sseListener;
   }
 
-  boolean isMul() {
+  public boolean isMul() {
     return multipart;
   }
 
-  boolean getFormMap() {
+  public boolean getFormMap() {
     return formUrl;
   }
 
