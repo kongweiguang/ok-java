@@ -159,19 +159,19 @@ public final class OK {
   }
 
   //get
-  private OkHttpClient client() {
+  public OkHttpClient client() {
     return C;
   }
 
-  private Request request() {
+  public Request request() {
     return request;
   }
 
-  private Req req() {
+  public Req req() {
     return req;
   }
 
-  private boolean async() {
+  public boolean async() {
     return async;
   }
 
