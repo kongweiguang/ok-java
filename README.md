@@ -435,49 +435,50 @@ ws请求返回的res对象为null
 
 ```java
 
-@Test
+public class WsTest {
+
+  @Test
   void test() {
 
-final Res ok = Req.ws("ws://websocket/test")
-    .query("k", "v")
-    .wsListener(new WSListener() {
-@Override
-public void open(final Req req, final Res res) {
-    super.open(req, res);
-    }
+    final Res ok = Req.ws("ws://websocket/test")
+        .query("k", "v")
+        .wsListener(new WSListener() {
+          @Override
+          public void open(final Req req, final Res res) {
+            super.open(req, res);
+          }
 
-    @Override
-    public void msg(final Req req, final String text) {
-    send("hello");
-    }
+          @Override
+          public void msg(final Req req, final String text) {
+            send("hello");
+          }
 
-    @Override
-    public void msg(final Req req, final byte[] bytes) {
-    super.msg(req, bytes);
-    }
+          @Override
+          public void msg(final Req req, final byte[] bytes) {
+            super.msg(req, bytes);
+          }
 
-    @Override
-    public void fail(final Req req, final Res res, final Throwable t) {
-    super.fail(req, res, t);
-    }
+          @Override
+          public void fail(final Req req, final Res res, final Throwable t) {
+            super.fail(req, res, t);
+          }
 
-    @Override
-    public void closing(final Req req, final int code, final String reason) {
-    super.closing(req, code, reason);
-    }
+          @Override
+          public void closing(final Req req, final int code, final String reason) {
+            super.closing(req, code, reason);
+          }
 
-    @Override
-    public void closed(final Req req, final int code, final String reason) {
-    super.closed(req, code, reason);
-    }
-    })
-    .ok();
+          @Override
+          public void closed(final Req req, final int code, final String reason) {
+            super.closed(req, code, reason);
+          }
+        })
+        .ok();
     //res == null
     Util.sync(this);
-    }
+  }
 
-    }
-
+}
 ```
 
 ## sse请求
