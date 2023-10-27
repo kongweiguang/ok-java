@@ -35,20 +35,20 @@ Maven
 <dependency>
   <groupId>io.github.kongweiguang</groupId>
   <artifactId>ok-java</artifactId>
-  <version>0.3</version>
+  <version>0.4</version>
 </dependency>
 ```
 
 Gradle
 
 ```xml
-implementation 'io.github.kongweiguang:ok-java:0.3'
+implementation 'io.github.kongweiguang:ok-java:0.4'
 ```
 
 Gradle-Kotlin
 
 ```xml
-implementation("io.github.kongweiguang:ok-java:0.3")
+implementation("io.github.kongweiguang:ok-java:0.4")
 ```
 
 # 简单介绍
@@ -62,29 +62,30 @@ public class ObjTest {
   void test1() throws Exception {
 
     //自定义请求创建
-    Req.of();
+    Req.of().method(Method.GET).url("http://localhost:8080/get");
 
     //基本的http请求
-    Req.get();
-    Req.post();
-    Req.delete();
-    Req.patch();
-    Req.head();
-    Req.options();
-    Req.trace();
-    Req.connect();
+    Req.get("http://localhost:8080/get");
+    Req.post("http://localhost:8080/post");
+    Req.delete("http://localhost:8080/delete");
+    Req.put("http://localhost:8080/put");
+    Req.patch("http://localhost:8080/patch");
+    Req.head("http://localhost:8080/head");
+    Req.options("http://localhost:8080/options");
+    Req.trace("http://localhost:8080/trace");
+    Req.connect("http://localhost:8080/connect");
 
     //特殊http请求
     //application/x-www-form-urlencoded
-    Req.formUrlencoded();
+    Req.formUrlencoded("http://localhost:8080/formUrlencoded");
     //multipart/form-data
-    Req.multipart();
+    Req.multipart("http://localhost:8080/multipart");
 
     //ws协议请求创建
-    Req.ws();
+    Req.ws("http://localhost:8080/ws");
 
     //sse协议请求创建
-    Req.sse();
+    Req.sse("http://localhost:8080/sse");
 
   }
 
@@ -96,30 +97,22 @@ public class ObjTest {
 url添加有两种方式，可以混合使用，如果url和构建函数里面都有值，按构建函数里面为主
 
 - 直接使用url方法
-
 ```java
 
 public class UrlTest {
 
   @Test
   void test1() throws Exception {
-    final Res res = Req.get()
-        .url("http://localhost:8080/get/one/two")
+    final Res res = Req.get("http://localhost:8080/get/one/two")
         .ok();
+    System.out.println("res = " + res.str());
   }
-}
 
-```
-
-- 使用构建方法
-
-```java
-
-public class UrlTest {
-
+  
+  // 使用构建方法
   @Test
   void test2() {
-    final Res res = Req.get()
+    final Res res = Req.of()
         .scheme("http")
         .host("localhost")
         .port(8080)
@@ -127,32 +120,24 @@ public class UrlTest {
         .path("one")
         .path("two")
         .ok();
+    System.out.println("res.str() = " + res.str());
     // http://localhost:8080/get/one/two
   }
-}
-
-```
-
-- 混合使用
-
-```java
-
-public class UrlTest {
-
+  
+  //混合使用
   @Test
   void test3() throws Exception {
     // http://localhost:8080/get/one/two
-    final Res res = Req.get()
-        .url("/get")
+    final Res res = Req.get("/get")
         .scheme("http")
         .host("localhost")
         .port(8080)
         .path("one")
         .path("two")
         .ok();
+    System.out.println("res = " + res.str());
   }
 }
-
 ```
 
 ## url参数
@@ -162,9 +147,8 @@ public class UrlQueryTest {
 
   @Test
   void test1() throws Exception {
-    //http://localhost:8080/get/one/two?k1=v1&k2=1&k2=2&k3=v3&k4=v4
-    final Res res = Req.get()
-        .url("http://localhost:8080/get/one/two")
+    //http://localhost:8080/get/one/two?q=1&k1=v1&k2=1&k2=2&k3=v3&k4=v4
+    final Res res = Req.get("http://localhost:8080/get/one/two?q=1")
         .query("k1", "v1")
         .query("k2", Arrays.asList("1", "2"))
         .query(new HashMap<String, String>() {{
@@ -187,14 +171,13 @@ public class HeaderTest {
 
   @Test
   void test1() throws Exception {
-    final Res res = Req.get()
-        .url("http://localhost:8080/get_string")
-        //contentType
+    final Res res = Req.get("http://localhost:8080/header")
+        //contentype
         .contentType(ContentType.json)
         //charset
         .charset(StandardCharsets.UTF_8)
         //user-agent
-        .ua("User-Agent")
+        .ua("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36 OPR/26.0.1656.60")
         //authorization
         .auth("auth qwe")
         //authorization bearer
@@ -214,10 +197,10 @@ public class HeaderTest {
           put("k2", "v2");
         }})
         .ok();
+    System.out.println("res.str() = " + res.str());
   }
 
 }
-
 ```
 
 ## 请求体
@@ -229,15 +212,15 @@ public class BodyTest {
 
   @Test
   void test1() throws Exception {
-    final Res res = Req.post()
-        .url("http://localhost:8080/get_string")
-        .body(JSON.toJSONString(new User()))
-        .body("{}")
+    final User kkk = new User().setAge(12).setHobby(new String[]{"a", "b", "c"}).setName("kkk");
+    final Res res = Req.post("http://localhost:8080/post_body")
+        //        .body(JSON.toJSONString(kkk))
+        //        .body("{}")
         //自动会将对象转成json对象，使用fastjson2
-        .body(new User())
-        .body(JSON.toJSONString(new User()), ContentType.text_plain)
+        .json(kkk)
+        //        .body("text", ContentType.text_plain)
         .ok();
-
+    System.out.println("res.str() = " + res.str());
   }
 
 }
@@ -254,47 +237,46 @@ public class FormTest {
   @Test
   void testForm() throws IOException {
     //application/x-www-form-urlencoded
-    final Res ok = Req.formUrlencoded()
-        .url("http://localhost:80/post_form")
+    final Res ok = Req.formUrlencoded("http://localhost:8080/post_form")
         .form("a", "1")
         .form(new HashMap<String, String>() {{
           put("b", "2");
         }})
         .ok();
+    System.out.println("ok.str() = " + ok.str());
   }
 
   @Test
   void test2() throws Exception {
     //multipart/form-data
-    final Res ok = Req.multipart()
-        .url("http://localhost:80/post_form")
-        .file("k", "k.txt", Files.readAllBytes(Paths.get("")))
+    final Res ok = Req.multipart("http://localhost:8080/post_mul_form")
+        .file("k", "k.txt", Files.readAllBytes(Paths.get("D:\\k\\k.txt")))
         .form("a", "1")
         .form(new HashMap<String, String>() {{
           put("b", "2");
         }})
         .ok();
+    System.out.println("ok.str() = " + ok.str());
   }
 }
 ```
 
 ## 异步请求
 
-异步请求返回的是future，也可以使用join()或者get()方法等待请求执行完，具体使用请看CompletableFuture（异步编排，很np）
+异步请求返回的是future，也可以使用join()或者get()方法等待请求执行完，具体使用请看CompletableFuture（异步编排）
 
 ```java
 public class AsyncTest {
 
   @Test
-  void test1() {
-    final CompletableFuture<Res> future = Req.get()
-        .url("https://localhost:80/get")
+  void test1() throws Exception {
+    final CompletableFuture<Res> future = Req.get("http://localhost:8080/get")
         .query("a", "1")
         .success(r -> System.out.println(r.str()))
         .fail(System.out::println)
         .okAsync();
 
-    System.out.println("res = " + future.join());
+    System.out.println("res = " + future.get(3, TimeUnit.SECONDS));
   }
 
 }
@@ -302,23 +284,22 @@ public class AsyncTest {
 
 ## 请求超时时间设置
 
-超时设置的时间单位是秒
+超时设置的时间单位是**秒**
 
 ```java
+
 public class TimeoutTest {
 
   @Test
   void test1() throws Exception {
-    final Res res = Req.get()
-        .url("http://localhost:8080/get_string")
-        .timeout(10)
-        .timeout(10, 10, 10)
+    final Res res = Req.get("http://localhost:8080/timeout")
+        .timeout(3)
+//        .timeout(10, 10, 10)
         .ok();
     System.out.println(res.str());
   }
 
 }
-
 ```
 
 ## 响应对象
@@ -329,8 +310,7 @@ public class ResTest {
 
   @Test
   void testRes() {
-    final Res res = Req.get()
-        .url("http://localhost:80/get_string")
+    final Res res = Req.get("http://localhost:80/get_string")
         .query("a", "1")
         .query("b", "2")
         .query("c", "3")
@@ -354,10 +334,10 @@ public class ResTest {
     final Map<String, List<String>> headers = res.headers();
 
     //状态
-    final int status = res.status();
+    final int status = res.code();
 
     //原始响应
-    final Response response = res.res();
+    final Response response = res.raw();
 
 
   }
@@ -375,17 +355,16 @@ public class RetryTest {
 
   @Test
   void testRetry() {
-    final Res res = Req.get()
-        .url("http://localhost:80/get_string")
+    final Res res = Req.get("http://localhost:8080/error")
         .query("a", "1")
         .retry(3)
         .ok();
+    System.out.println("res = " + res.str());
   }
 
   @Test
   void testRetry2() {
-    final Res res = Req.get()
-        .url("http://localhost:80/get_string")
+    final Res res = Req.get("http://localhost:8080/error")
         .query("a", "1")
         .retry(3, Duration.ofSeconds(2), (r, t) -> {
           final String str = r.str();
@@ -395,18 +374,18 @@ public class RetryTest {
           return false;
         })
         .ok();
+    System.out.println("res.str() = " + res.str());
   }
 
   @Test
   void testRetry3() {
     //异步重试
-    final CompletableFuture<Res> res = Req.get()
-        .url("http://localhost:80/get_string")
+    final CompletableFuture<Res> res = Req.get("http://localhost:8080/error")
         .query("a", "1")
         .retry(3)
         .okAsync();
-
-    res.join();
+    System.out.println(1);
+    System.out.println("res.join().str() = " + res.join().str());
   }
 }
 ```
@@ -416,6 +395,7 @@ public class RetryTest {
 代理默认是http，可以设置socket代理
 
 ```java
+
 public class ProxyTest {
 
   @Test
@@ -425,12 +405,27 @@ public class ProxyTest {
     Config.proxy(Type.SOCKS, "127.0.0.1", 80);
     Config.proxyAuthenticator("k", "pass");
 
-    final Res res = Req.get()
-        .url("http://localhost:8080/get/one/two")
+    final Res res = Req.get("http://localhost:8080/get/one/two")
         .query("a", "1")
         .ok();
   }
 
+}
+```
+## 下载
+```java
+public class DowTest {
+
+  @Test
+  void testDow() {
+    final Res ok = Req.get("http://localhost:80/get_file").ok();
+
+    try {
+      ok.file("d:\\k.txt");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
 ```
 
@@ -440,51 +435,48 @@ ws请求返回的res对象为null
 
 ```java
 
-public class SendTest {
-
-  @Test
+@Test
   void test() {
 
-    final Res ok = Req.ws()
-        .url("ws://websocket/test")
-        .query("k", "v")
-        .wsListener(new WSListener() {
-          @Override
-          public void open(final Req req, final Res res) {
-            super.open(req, res);
-          }
+final Res ok = Req.ws("ws://websocket/test")
+    .query("k", "v")
+    .wsListener(new WSListener() {
+@Override
+public void open(final Req req, final Res res) {
+    super.open(req, res);
+    }
 
-          @Override
-          public void msg(final Req req, final String text) {
-            send("hello");
+    @Override
+    public void msg(final Req req, final String text) {
+    send("hello");
+    }
 
-          }
+    @Override
+    public void msg(final Req req, final byte[] bytes) {
+    super.msg(req, bytes);
+    }
 
-          @Override
-          public void msg(final Req req, final byte[] bytes) {
-            super.msg(req, bytes);
-          }
+    @Override
+    public void fail(final Req req, final Res res, final Throwable t) {
+    super.fail(req, res, t);
+    }
 
-          @Override
-          public void fail(final Req req, final Res res, final Throwable t) {
-            super.fail(req, res, t);
-          }
+    @Override
+    public void closing(final Req req, final int code, final String reason) {
+    super.closing(req, code, reason);
+    }
 
-          @Override
-          public void closing(final Req req, final int code, final String reason) {
-            super.closing(req, code, reason);
-          }
-
-          @Override
-          public void closed(final Req req, final int code, final String reason) {
-            super.closed(req, code, reason);
-          }
-        })
-        .ok();
+    @Override
+    public void closed(final Req req, final int code, final String reason) {
+    super.closed(req, code, reason);
+    }
+    })
+    .ok();
     //res == null
-  }
+    Util.sync(this);
+    }
 
-}
+    }
 
 ```
 
@@ -494,14 +486,13 @@ sse请求返回的res对象为null
 
 ```java
 
-public class Test1 {
+public class SseTest {
 
 
   @Test
   void test() throws InterruptedException {
 
-    Req.sse()
-        .url("localhost:8080/sse")
+    Req.sse("localhost:8080/sse")
         .sseListener(new SSEListener() {
           @Override
           public void event(Req req, SseEvent msg) {
@@ -530,9 +521,11 @@ public class Test1 {
         })
         .ok();
 
-    Thread.sleep(10000);
+    Util.sync(this);
   }
+
 }
+
 ```
 
 ## 全局配置设置

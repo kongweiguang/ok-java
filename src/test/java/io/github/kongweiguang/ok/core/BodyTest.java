@@ -17,7 +17,6 @@ public class BodyTest {
         //        .body("text", ContentType.text_plain)
         .ok();
     System.out.println("res.str() = " + res.str());
-
   }
 
 }
