@@ -31,35 +31,35 @@ import okhttp3.Response;
  */
 public final class Res implements AutoCloseable {
 
-  private final Response res;
-  private byte[] bt;
+  private final Response raw;
+  private byte[] bytes;
 
-  private Res(final Response response) {
-    this.res = response;
+  private Res(final Response resp) {
+    this.raw = resp;
   }
 
-  public static Res of(final Response response) {
-    return new Res(response);
+  public static Res of(final Response resp) {
+    return new Res(resp);
   }
 
-  public Response res() {
-    return res;
+  public Response raw() {
+    return raw;
   }
 
   public int code() {
-    return res().code();
+    return raw().code();
   }
 
   public boolean isOk() {
-    return res().isSuccessful();
+    return raw().isSuccessful();
   }
 
   public String header(String name) {
-    return res().header(name);
+    return raw().header(name);
   }
 
   public Map<String, List<String>> headers() {
-    final Headers headers = res().headers();
+    final Headers headers = raw().headers();
 
     final Map<String, List<String>> fr = new LinkedHashMap<>(headers.size(), 1);
 
@@ -71,11 +71,11 @@ public final class Res implements AutoCloseable {
   }
 
   public String contentType() {
-    return res().body().contentType().toString();
+    return raw().body().contentType().toString();
   }
 
   public Charset charset() {
-    return res().body().contentType().charset(StandardCharsets.UTF_8);
+    return raw().body().contentType().charset(StandardCharsets.UTF_8);
   }
 
   public String contentEncoding() {
@@ -83,7 +83,7 @@ public final class Res implements AutoCloseable {
   }
 
   public long contentLength() {
-    return res().body().contentLength();
+    return raw().body().contentLength();
   }
 
   public String cookieStr() {
@@ -91,7 +91,7 @@ public final class Res implements AutoCloseable {
   }
 
   public long useMillis() {
-    return res().receivedResponseAtMillis() - res().sentRequestAtMillis();
+    return raw().receivedResponseAtMillis() - raw().sentRequestAtMillis();
   }
 
   public boolean isJsonObj() {
@@ -107,15 +107,15 @@ public final class Res implements AutoCloseable {
   }
 
   public byte[] bytes() {
-    if (isNull(bt)) {
+    if (isNull(bytes)) {
       try {
-        this.bt = res().body().bytes();
+        this.bytes = raw().body().bytes();
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
     }
 
-    return bt;
+    return bytes;
   }
 
   public String str() {
@@ -159,6 +159,7 @@ public final class Res implements AutoCloseable {
     if (isJson()) {
       return JSON.parseObject(bytes(), type);
     }
+
     return null;
   }
 
@@ -190,29 +191,29 @@ public final class Res implements AutoCloseable {
 
   @Override
   public void close() {
-    res().close();
-    this.bt = null;
+    raw().close();
+    this.bytes = null;
   }
 
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder()
         .append("---ok-req---").append('\n')
-        .append("method: ").append(res().request().method()).append(' ')
-        .append(res().request().url()).append('\n')
+        .append("method: ").append(raw().request().method()).append(' ')
+        .append(raw().request().url()).append('\n')
         .append("headers: ").append('\n')
-        .append(res().request().headers()).append('\n')
+        .append(raw().request().headers()).append('\n')
         .append("body: ").append('\n');
-    Object body = res().request().tag(Req.class).strBody();
+    Object body = raw().request().tag(Req.class).strBody();
 
     if (isNull(body)) {
-      body = res().request().body();
+      body = raw().request().body();
     }
 
     return sb.append(body).append("\n\n")
         .append("---ok-res---").append('\n')
         .append("headers: ").append('\n')
-        .append(res().headers()).append('\n')
+        .append(raw().headers()).append('\n')
         .append("body: ").append('\n')
         .append(str()).append('\n')
         .append("------------").append('\n').toString();

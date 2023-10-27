@@ -40,7 +40,7 @@ public class ResTest {
     final int status = res.code();
 
     //原始响应
-    final Response response = res.res();
+    final Response response = res.raw();
 
 
   }
