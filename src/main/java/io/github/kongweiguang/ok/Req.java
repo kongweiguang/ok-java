@@ -5,7 +5,6 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import com.alibaba.fastjson2.JSON;
-import io.github.kongweiguang.ok.core.Const;
 import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.Method;
@@ -145,25 +144,23 @@ public final class Req {
   }
 
   public static Req formUrlencoded(final String url) {
-    return of(url).method(Method.POST)
-        .contentType(ContentType.form_urlencoded)
-        .formUrlencoded(true);
+    return of(url).formUrlencoded();
   }
 
   public static Req multipart(final String url) {
-    return of(url).method(Method.POST)
-        .contentType(ContentType.multipart)
-        .multipart(true);
+    return of(url).multipart();
   }
 
-  private Req formUrlencoded(final boolean mul) {
-    this.formUrl = mul;
-    return this;
+  public Req formUrlencoded() {
+    this.formUrl = true;
+    return method(Method.POST)
+        .contentType(ContentType.form_urlencoded);
   }
 
-  private Req multipart(final boolean mul) {
-    this.multipart = mul;
-    return this;
+  public Req multipart() {
+    this.multipart = true;
+    return method(Method.POST)
+        .contentType(ContentType.multipart);
   }
 
   //ws
@@ -215,7 +212,7 @@ public final class Req {
 
       }
       //form_urlencoded 格式提交
-      else if (getFormMap()) {
+      else if (isFormUrl()) {
 
         final FormBody.Builder b = new FormBody.Builder(charset());
 
@@ -252,7 +249,10 @@ public final class Req {
     }
 
     if (port() == -1) {
-      ub.port(url().getPort() == -1 ? Const.port : url().getPort());
+      final int p = url().getPort();
+      if (p > 0) {
+        ub.port(p);
+      }
     }
 
     if (nonNull(url().getPath())) {
@@ -459,7 +459,7 @@ public final class Req {
   }
 
   public Req form(final String name, final String value) {
-    if (getFormMap() || isMul()) {
+    if (isFormUrl() || isMul()) {
       form().put(name, value);
     }
 
@@ -467,7 +467,7 @@ public final class Req {
   }
 
   public Req form(final Map<String, String> form) {
-    if (getFormMap() || isMul()) {
+    if (isFormUrl() || isMul()) {
       form().putAll(form);
     }
 
@@ -481,11 +481,6 @@ public final class Req {
 
   public Req json(final Object json) {
     return body(JSON.toJSONString(json), ContentType.json);
-  }
-
-  public Req body(final String str) {
-    this.strBody = str;
-    return this;
   }
 
   public Req body(final String str, final ContentType contentType) {
@@ -672,7 +667,7 @@ public final class Req {
     return multipart;
   }
 
-  public boolean getFormMap() {
+  public boolean isFormUrl() {
     return formUrl;
   }
 

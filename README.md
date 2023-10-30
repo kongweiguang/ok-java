@@ -35,20 +35,20 @@ Maven
 <dependency>
   <groupId>io.github.kongweiguang</groupId>
   <artifactId>ok-java</artifactId>
-  <version>0.4</version>
+  <version>0.5</version>
 </dependency>
 ```
 
 Gradle
 
 ```xml
-implementation 'io.github.kongweiguang:ok-java:0.4'
+implementation 'io.github.kongweiguang:ok-java:0.5'
 ```
 
 Gradle-Kotlin
 
 ```xml
-implementation("io.github.kongweiguang:ok-java:0.4")
+implementation("io.github.kongweiguang:ok-java:0.5")
 ```
 
 # 简单介绍
