@@ -31,25 +31,32 @@ import okhttp3.Response;
  */
 public final class Res implements AutoCloseable {
 
+  //原始res对象
   private final Response raw;
+  //res的body
   private byte[] bytes;
 
+  //构造函数
   private Res(final Response resp) {
     this.raw = resp;
   }
 
+  //工厂方法
   public static Res of(final Response resp) {
     return new Res(resp);
   }
 
+  //获得响应的原始对象
   public Response raw() {
     return raw;
   }
 
+  //响应code
   public int code() {
     return raw().code();
   }
 
+  //请求是否成功
   public boolean isOk() {
     return raw().isSuccessful();
   }
