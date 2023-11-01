@@ -14,12 +14,10 @@ import org.jetbrains.annotations.Nullable;
  * sse请求监听
  *
  * @author kongweiguang
- * @since 0.1
  */
 public abstract class SSEListener extends EventSourceListener {
 
   public EventSource es;
-
 
   @Override
   public void onOpen(@NotNull final EventSource eventSource, @NotNull final Response response) {
@@ -50,21 +48,47 @@ public abstract class SSEListener extends EventSourceListener {
     closed(eventSource.request().tag(Req.class));
   }
 
-
+  /**
+   * 关闭当前连接
+   */
   public void close() {
     if (nonNull(es)) {
       es.cancel();
     }
   }
 
+  /**
+   * 打开连接触发事件
+   *
+   * @param req 请求信息 {@link Req}
+   * @param res 响应信息 {@link Res}
+   */
   public void open(final Req req, final Res res) {
   }
 
+  /**
+   * 获取消息触发事件
+   *
+   * @param req 请求信息 {@link Req}
+   * @param msg 事件信息 {@link SseEvent}
+   */
   public abstract void event(final Req req, final SseEvent msg);
 
+  /**
+   * 失败时触发事件
+   *
+   * @param req 请求信息 {@link Req}
+   * @param res 响应信息 {@link Res}
+   * @param t   异常信息 {@link Throwable}
+   */
   public void fail(final Req req, final Res res, final Throwable t) {
   }
 
+  /**
+   * 关闭时出发连接
+   *
+   * @param req 请求信息 {@link Req}
+   */
   public void closed(final Req req) {
   }
 

@@ -14,6 +14,8 @@ import okhttp3.sse.EventSources;
 
 /**
  * 发送请求
+ *
+ * @author kongweiguang
  */
 public final class OK {
 
@@ -55,19 +57,24 @@ public final class OK {
   }
 
 
+  /**
+   * 实际发送请求
+   *
+   * @return 结果
+   */
   private CompletableFuture<Res> ojbk() {
-
-    if (reqType()) {
-      return http0(new AtomicInteger(req().max()), req().delay(), req().predicate());
-    }
-
-    return CompletableFuture.completedFuture(null);
+    return reqType();
   }
 
-  private boolean reqType() {
+  /**
+   * 请求类型判断
+   *
+   * @return 是否http请求
+   */
+  private CompletableFuture<Res> reqType() {
     switch (req().reqType()) {
       case http:
-        return true;
+        return http0(new AtomicInteger(req().max()), req().delay(), req().predicate());
       case ws:
         ws0();
         break;
@@ -76,9 +83,17 @@ public final class OK {
         break;
     }
 
-    return false;
+    return CompletableFuture.completedFuture(null);
   }
 
+  /**
+   * http请求
+   *
+   * @param max       重试次数
+   * @param duration  重试间隔
+   * @param predicate 重试条件
+   * @return 响应结果
+   */
   private CompletableFuture<Res> http0(final AtomicInteger max,
       final Duration duration,
       final BiPredicate<Res, Throwable> predicate) {
@@ -112,6 +127,16 @@ public final class OK {
 
   }
 
+  /**
+   * 处理是否重试
+   *
+   * @param max       重试次数
+   * @param duration  重试间隔
+   * @param predicate 重试条件
+   * @param r         响应结果
+   * @param t         异常
+   * @return 是否重试
+   */
   private boolean handleRetry(final AtomicInteger max,
       final Duration duration,
       final BiPredicate<Res, Throwable> predicate,
@@ -125,6 +150,11 @@ public final class OK {
     return false;
   }
 
+  /**
+   * 提交请求
+   *
+   * @return 响应结果 {@link Res}
+   */
   private Res execute() {
     try {
       return Res.of(client().newCall(request()).execute());
@@ -133,11 +163,16 @@ public final class OK {
     }
   }
 
-
+  /**
+   * ws请求
+   */
   private void ws0() {
     client().newWebSocket(request(), req().wsListener());
   }
 
+  /**
+   * sse请求
+   */
   private void sse0() {
     EventSources.createFactory(client()).newEventSource(request(), req().sseListener());
   }

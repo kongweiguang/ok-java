@@ -85,7 +85,7 @@ public final class Req {
   private WSListener wsListener;
   private SSEListener sseListener;
 
-  //dami
+  //attachment
   private Map<Object, Object> attachment;
 
   private Req() {
@@ -175,24 +175,47 @@ public final class Req {
     return of(url).reqType(ReqType.sse);
   }
 
-  //同步请求
+  /**
+   * 同步请求
+   *
+   * @return Res {@link Res}
+   */
   public Res ok() {
     return ok(Config.client());
   }
 
+  /**
+   * 同步请求，自定义client
+   *
+   * @param client {@link OkHttpClient}
+   * @return Res {@link Res}
+   */
   public Res ok(final OkHttpClient client) {
     return OK.ok(this, client);
   }
 
-  //异步请求
+  /**
+   * 异步请求
+   *
+   * @return Res {@link Res}
+   */
   public CompletableFuture<Res> okAsync() {
     return okAsync(Config.client());
   }
 
+  /**
+   * 异步请求，自定义client
+   *
+   * @param client {@link OkHttpClient}
+   * @return Res {@link Res}
+   */
   public CompletableFuture<Res> okAsync(final OkHttpClient client) {
     return OK.okAsync(this, client);
   }
 
+  /**
+   * 请求前初始化
+   */
   void bf() {
     addMethod();
     addQuery();
@@ -201,11 +224,18 @@ public final class Req {
     builder().tag(Req.class, this);
   }
 
-
+  /**
+   * 添加http method
+   */
   private void addMethod() {
     builder().method(method().name(), addBody());
   }
 
+  /**
+   * 添加body
+   *
+   * @return RequestBody {@link RequestBody}
+   */
   private RequestBody addBody() {
     RequestBody rb = null;
 
@@ -245,7 +275,9 @@ public final class Req {
     return rb;
   }
 
-
+  /**
+   * 添加请求的url和查询参数
+   */
   private void addQuery() {
     final HttpUrl.Builder ub = new HttpUrl.Builder();
 
@@ -291,6 +323,9 @@ public final class Req {
     builder().url(ub.build());
   }
 
+  /**
+   * 添加cookie
+   */
   private void addCookie() {
 
     if (nonNull(cookieMap)) {
@@ -299,6 +334,12 @@ public final class Req {
 
   }
 
+  /**
+   * cookie转字符串
+   *
+   * @param cookies map集合
+   * @return cookie字符串
+   */
   private static String cookie2Str(Map<String, String> cookies) {
     StringBuilder sb = new StringBuilder();
 
@@ -308,7 +349,12 @@ public final class Req {
   }
 
 
-  //timeout，单位秒
+  /**
+   * 请求超时时间设置，单位秒
+   *
+   * @param timeoutSeconds 超时时间
+   * @return Req {@link Req}
+   */
   public Req timeout(int timeoutSeconds) {
     if (timeoutSeconds > 0) {
       return timeout(timeoutSeconds, timeoutSeconds, timeoutSeconds);
@@ -317,6 +363,14 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 请求超时时间设置，单位秒
+   *
+   * @param connectTimeoutSeconds 连接超时时间
+   * @param writeTimeoutSeconds   写入超时时间
+   * @param readTimeoutSeconds    读取超时时间
+   * @return Req {@link Req}
+   */
   public Req timeout(int connectTimeoutSeconds, int writeTimeoutSeconds, int readTimeoutSeconds) {
     if (connectTimeoutSeconds > 0) {
       this.timeout = new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds);
@@ -326,13 +380,23 @@ public final class Req {
     return this;
   }
 
-  //method
+  /**
+   * 设置method
+   *
+   * @param method {@link Method}
+   * @return Req {@link Req}
+   */
   public Req method(final Method method) {
     this.method = method;
     return this;
   }
 
-  //header
+  /**
+   * 添加请求头
+   *
+   * @param headers map集合
+   * @return Req {@link Req}
+   */
   public Req headers(final Map<String, String> headers) {
     if (nonNull(headers)) {
       headers.forEach(builder()::addHeader);
@@ -341,6 +405,13 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 添加请求头
+   *
+   * @param name  名称
+   * @param value 值
+   * @return Req {@link Req}
+   */
   public Req header(final String name, final String value) {
     if (nonNull(name) && nonNull(value)) {
       builder.header(name, value);
@@ -349,6 +420,12 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 添加cookie
+   *
+   * @param cookies map集合
+   * @return Req {@link Req}
+   */
   public Req cookies(final Map<String, String> cookies) {
     if (nonNull(cookies)) {
       cookie().putAll(cookies);
@@ -357,6 +434,13 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 添加cookie
+   *
+   * @param k key
+   * @param v value
+   * @return Req {@link Req}
+   */
   public Req cookie(final String k, final String v) {
     if (nonNull(k) && nonNull(v)) {
       cookie().put(k, v);
@@ -365,6 +449,12 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 设置contentType
+   *
+   * @param contentType {@link ContentType}
+   * @return Req {@link Req}
+   */
   public Req contentType(final ContentType contentType) {
     if (nonNull(contentType)) {
       this.contentType = contentType.v();
@@ -375,26 +465,55 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 设置charset
+   *
+   * @param charset 编码类型
+   * @return Req {@link Req}
+   */
   public Req charset(final Charset charset) {
     this.charset = charset;
     return this;
   }
 
+  /**
+   * 设置user-agent
+   *
+   * @param ua user-agent
+   * @return Req {@link Req}
+   */
   public Req ua(final String ua) {
     builder().header(Header.user_agent.v(), ua);
     return this;
   }
 
+  /**
+   * 设置authorization
+   *
+   * @param auth 认证凭证
+   * @return Req {@link Req}
+   */
   public Req auth(final String auth) {
     builder().header(Header.authorization.v(), auth);
     return this;
   }
 
+  /**
+   * 设置bearer类型的authorization
+   *
+   * @param token bearer token
+   * @return Req {@link Req}
+   */
   public Req bearer(final String token) {
     return auth("Bearer " + token);
   }
 
-  //url
+  /**
+   * 设置url
+   *
+   * @param url url
+   * @return Req {@link Req}
+   */
   public Req url(final String url) {
     try {
       this.url = new URL(Util.urlRegex(url));
@@ -405,21 +524,45 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 设置url的协议
+   *
+   * @param scheme 协议
+   * @return Req {@link Req}
+   */
   public Req scheme(final String scheme) {
     this.scheme = scheme;
     return this;
   }
 
+  /**
+   * 设置url的主机地址
+   *
+   * @param host 主机地址
+   * @return Req {@link Req}
+   */
   public Req host(final String host) {
     this.host = host;
     return this;
   }
 
+  /**
+   * 设置url的端口
+   *
+   * @param port 端口
+   * @return Req {@link Req}
+   */
   public Req port(final int port) {
     this.port = port;
     return this;
   }
 
+  /**
+   * 设置url的path
+   *
+   * @param path path
+   * @return Req {@link Req}
+   */
   public Req path(final String path) {
     if (nonNull(path)) {
       paths().add(Util.removeFirstSlash(path));
@@ -428,6 +571,13 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 设置url的query
+   *
+   * @param k 键
+   * @param v 值
+   * @return
+   */
   public Req query(final String k, final String v) {
     if (nonNull(k) && nonNull(v)) {
       query().put(k, v);
@@ -436,6 +586,13 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 设置url的query
+   *
+   * @param k  键
+   * @param vs 值集合
+   * @return Req {@link Req}
+   */
   public Req query(final String k, final Iterable<String> vs) {
     if (nonNull(k) && nonNull(vs)) {
       for (String v : vs) {
@@ -446,6 +603,12 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 设置url的query
+   *
+   * @param querys query的map集合
+   * @return Req {@link Req}
+   */
   public Req query(final Map<String, String> querys) {
     if (nonNull(querys)) {
       querys.forEach(query()::put);
@@ -454,7 +617,14 @@ public final class Req {
     return this;
   }
 
-  //form
+  /**
+   * 添加上传文件，只有multipart方式才可以
+   *
+   * @param name     名称
+   * @param fileName 文件名
+   * @param bytes    文件内容
+   * @return Req {@link Req}
+   */
   public Req file(String name, String fileName, byte[] bytes) {
     if (isMul()) {
       mul().addFormDataPart(
@@ -467,6 +637,13 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 设置form表单，只有form_urlencoded或者multipart方式才可以
+   *
+   * @param name  名称
+   * @param value 值
+   * @return Req {@link Req}
+   */
   public Req form(final String name, final String value) {
     if (isFormUrl() || isMul()) {
       form().put(name, value);
@@ -475,6 +652,12 @@ public final class Req {
     return this;
   }
 
+  /**
+   * 设置form表单，只有form_urlencoded或者multipart方式才可以
+   *
+   * @param form form表单map
+   * @return Req {@link Req}
+   */
   public Req form(final Map<String, String> form) {
     if (isFormUrl() || isMul()) {
       form().putAll(form);
@@ -483,33 +666,67 @@ public final class Req {
     return this;
   }
 
-  //body
+  /**
+   * 添加json字符串的body
+   *
+   * @param json json字符串
+   * @return Req {@link Req}
+   */
   public Req json(final String json) {
     return body(json, ContentType.json);
   }
 
+  /**
+   * 添加数据类型的对象，使用fastjson转换成json字符串
+   *
+   * @param json 数据类型的对象
+   * @return Req {@link Req}
+   */
   public Req json(final Object json) {
     return body(JSON.toJSONString(json), ContentType.json);
   }
 
+  /**
+   * 自定义设置json对象
+   *
+   * @param str         内容
+   * @param contentType 类型 {@link ContentType}
+   * @return Req {@link Req}
+   */
   public Req body(final String str, final ContentType contentType) {
     contentType(contentType);
     this.strBody = str;
     return this;
   }
 
-  //async
+  /**
+   * 异步请求时成功时调用函数
+   *
+   * @param success 成功回调函数
+   * @return Req {@link Req}
+   */
   public Req success(final Consumer<Res> success) {
     this.success = success;
     return this;
   }
 
+  /**
+   * 异步请求失败时调用函数
+   *
+   * @param fail 失败回调函数
+   * @return Req {@link Req}
+   */
   public Req fail(final Consumer<Throwable> fail) {
     this.fail = fail;
     return this;
   }
 
-  //retry
+  /**
+   * 重试   设置成3会额外多请求3次，加上本身请求的一次，一共是4次
+   *
+   * @param max 最大重试次数
+   * @return Req {@link Req}
+   */
   public Req retry(final int max) {
     return retry(max, Duration.ofSeconds(1),
         (r, e) -> {
@@ -525,6 +742,14 @@ public final class Req {
         });
   }
 
+  /**
+   * 重试   设置成3会额外多请求3次，加上本身请求的一次，一共是4次
+   *
+   * @param max       最大重试次数
+   * @param delay     重试间隔时间
+   * @param predicate 重试条件
+   * @return Req {@link Req}
+   */
   public Req retry(
       final int max,
       final Duration delay,
@@ -535,19 +760,41 @@ public final class Req {
     return this;
   }
 
-  //listener
+  /**
+   * 设置ws协议的监听函数
+   *
+   * @param listener 监听函数
+   * @return Req {@link Req}
+   */
   public Req wsListener(final WSListener listener) {
     this.wsListener = listener;
     return this;
   }
 
+  /**
+   * sse协议调用时的监听函数
+   *
+   * @param sseListener 监听函数
+   * @return Req {@link Req}
+   */
   public Req sseListener(final SSEListener sseListener) {
     this.sseListener = sseListener;
     return this;
   }
 
+  /**
+   * 请求中添加的附件
+   *
+   * @param k 键
+   * @param v 值
+   * @return Req {@link Req}
+   */
+  public Req setAttachment(final Object k, final Object v) {
+    attachment().put(k, v);
+    return this;
+  }
 
-  //attachment
+  //get
   public Map<Object, Object> attachment() {
     if (isNull(attachment)) {
       this.attachment = new HashMap<>();
@@ -555,12 +802,6 @@ public final class Req {
     return attachment;
   }
 
-  public Req setAttachment(final Object k, final Object v) {
-    attachment().put(k, v);
-    return this;
-  }
-
-  //get
   public Builder builder() {
     return builder;
   }
@@ -587,7 +828,7 @@ public final class Req {
 
   public LinkedList<String> paths() {
     if (isNull(paths)) {
-      paths = new LinkedList<>();
+      this.paths = new LinkedList<>();
     }
 
     return paths;
@@ -611,7 +852,7 @@ public final class Req {
 
   public MultiValueMap<String, String> query() {
     if (isNull(queryMap)) {
-      queryMap = new MultiValueMap<>();
+      this.queryMap = new MultiValueMap<>();
     }
 
     return queryMap;
@@ -619,7 +860,7 @@ public final class Req {
 
   public Map<String, String> form() {
     if (isNull(formMap)) {
-      formMap = new HashMap<>();
+      this.formMap = new HashMap<>();
     }
 
     return formMap;
@@ -627,7 +868,7 @@ public final class Req {
 
   public Map<String, String> cookie() {
     if (isNull(cookieMap)) {
-      cookieMap = new HashMap<>();
+      this.cookieMap = new HashMap<>();
     }
 
     return cookieMap;
@@ -635,7 +876,7 @@ public final class Req {
 
   public MultipartBody.Builder mul() {
     if (isNull(mul)) {
-      mul = new MultipartBody.Builder();
+      this.mul = new MultipartBody.Builder();
     }
     return mul;
   }

@@ -1,10 +1,9 @@
 package io.github.kongweiguang.ok.sse;
 
 /**
- * Sse 事件
+ * sse 事件
  *
  * @author kongweiguang
- * @since 0.1
  */
 public final class SseEvent {
 

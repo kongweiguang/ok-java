@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * ws监听器
+ *
+ * @author kongweiguang
  */
 public abstract class WSListener extends WebSocketListener {
 
@@ -56,36 +58,91 @@ public abstract class WSListener extends WebSocketListener {
     closed(webSocket.request().tag(Req.class), code, reason);
   }
 
-
+  /**
+   * 发送消息
+   *
+   * @param text 字符串类型
+   * @return {@link WSListener}
+   */
   public WSListener send(final String text) {
     ws.send(text);
     return this;
   }
 
+  /**
+   * 发送消息
+   *
+   * @param bytes byte类型
+   * @return {@link WSListener}
+   */
   public WSListener send(final byte[] bytes) {
     ws.send(ByteString.of(bytes));
     return this;
   }
 
+  /**
+   * 关闭连接
+   */
   public void close() {
     ws.cancel();
   }
 
 
+  /**
+   * 打开连接触发事件
+   *
+   * @param req {@link Req}
+   * @param res {@link Res}
+   */
   public void open(final Req req, final Res res) {
   }
 
-  public abstract void msg(final Req req, final String text);
+  /**
+   * 收到消息触发事件
+   *
+   * @param req  请求信息 {@link Req}
+   * @param text string类型响应数据 {@link String}
+   */
+  public void msg(final Req req, final String text) {
+  }
 
+
+  /**
+   * 收到消息触发事件
+   *
+   * @param req   请求信息 {@link Req}
+   * @param bytes byte类型响应数据 {@link Byte}
+   */
   public void msg(final Req req, final byte[] bytes) {
   }
 
+  /**
+   * 失败触发事件
+   *
+   * @param req 请求信息 {@link Req}
+   * @param res 响应信息 {@link Res}
+   * @param t   异常信息 {@link Throwable}
+   */
   public void fail(final Req req, final Res res, final Throwable t) {
   }
 
+  /**
+   * 关闭触发事件
+   *
+   * @param req    请求信息 {@link Req}
+   * @param code   状态码
+   * @param reason 原因
+   */
   public void closing(final Req req, final int code, final String reason) {
   }
 
+  /**
+   * 关闭触发事件
+   *
+   * @param req    请求信息 {@link Req}
+   * @param code   状态码
+   * @param reason 原因
+   */
   public void closed(final Req req, final int code, final String reason) {
   }
 

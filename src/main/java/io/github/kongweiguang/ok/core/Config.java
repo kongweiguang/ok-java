@@ -23,6 +23,8 @@ import okhttp3.OkHttpClient.Builder;
 
 /**
  * 配置中心
+ *
+ * @author kongweiguang
  */
 public final class Config {
 
