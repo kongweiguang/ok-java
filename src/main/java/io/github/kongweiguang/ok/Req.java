@@ -5,6 +5,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import com.alibaba.fastjson2.JSON;
+import io.github.kongweiguang.ok.core.Config;
 import io.github.kongweiguang.ok.core.ContentType;
 import io.github.kongweiguang.ok.core.Header;
 import io.github.kongweiguang.ok.core.Method;
@@ -30,6 +31,7 @@ import okhttp3.FormBody;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Request.Builder;
 import okhttp3.RequestBody;
@@ -175,14 +177,21 @@ public final class Req {
 
   //同步请求
   public Res ok() {
-    return OK.ok(this);
+    return ok(Config.client());
+  }
+
+  public Res ok(final OkHttpClient client) {
+    return OK.ok(this, client);
   }
 
   //异步请求
   public CompletableFuture<Res> okAsync() {
-    return OK.okAsync(this);
+    return okAsync(Config.client());
   }
 
+  public CompletableFuture<Res> okAsync(final OkHttpClient client) {
+    return OK.okAsync(this, client);
+  }
 
   void bf() {
     addMethod();

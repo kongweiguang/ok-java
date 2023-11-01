@@ -23,8 +23,8 @@ public final class OK {
   private boolean async;
   private boolean retry;
 
-  private OK(final Req req) {
-    this.C = Config.client();
+  private OK(final Req req, final OkHttpClient client) {
+    this.C = client;
     req.bf();
 
     this.request = req.builder().build();
@@ -39,8 +39,8 @@ public final class OK {
    * @param req 请求参数 {@link Req}
    * @return Res {@link Res}
    */
-  public static Res ok(final Req req) {
-    return new OK(req).ojbk().join();
+  public static Res ok(final Req req, final OkHttpClient client) {
+    return new OK(req, client).ojbk().join();
   }
 
   /**
@@ -50,8 +50,8 @@ public final class OK {
    * @param req 请求参数 {@link Req}
    * @return Res {@link Res}
    */
-  public static CompletableFuture<Res> okAsync(final Req req) {
-    return new OK(req).async(true).ojbk();
+  public static CompletableFuture<Res> okAsync(final Req req, final OkHttpClient client) {
+    return new OK(req, client).async(true).ojbk();
   }
 
 

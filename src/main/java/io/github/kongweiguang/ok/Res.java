@@ -135,7 +135,7 @@ public final class Res implements AutoCloseable {
       return JSON.parseObject(str());
     }
 
-    return JSONObject.of();
+    return null;
   }
 
   public JSONArray jsonArray() {
@@ -143,7 +143,7 @@ public final class Res implements AutoCloseable {
       return JSON.parseArray(str());
     }
 
-    return JSONArray.of();
+    return null;
   }
 
 
