@@ -2,6 +2,7 @@ package io.github.kongweiguang.ok.core;
 
 import io.github.kongweiguang.ok.Req;
 import io.github.kongweiguang.ok.Res;
+import io.github.kongweiguang.ok.core.UA.Mac;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ public class HeaderTest {
         //charset
         .charset(StandardCharsets.UTF_8)
         //user-agent
-        .ua("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36 OPR/26.0.1656.60")
+        .ua(Mac.chrome.v())
         //authorization
         .auth("auth qwe")
         //authorization bearer

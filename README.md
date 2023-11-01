@@ -178,7 +178,7 @@ public class HeaderTest {
         //charset
         .charset(StandardCharsets.UTF_8)
         //user-agent
-        .ua("Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36 OPR/26.0.1656.60")
+        .ua(Mac.chrome.v())
         //authorization
         .auth("auth qwe")
         //authorization bearer
