@@ -19,14 +19,14 @@ import okhttp3.sse.EventSources;
  */
 public final class OK {
 
-  private final OkHttpClient C;
+  private final OkHttpClient client;
   private final Request request;
   private Req req;
   private boolean async;
   private boolean retry;
 
   private OK(final Req req, final OkHttpClient client) {
-    this.C = client;
+    this.client = client;
     req.bf();
 
     this.request = req.builder().build();
@@ -195,7 +195,7 @@ public final class OK {
 
   //get
   public OkHttpClient client() {
-    return C;
+    return client;
   }
 
   public Request request() {
