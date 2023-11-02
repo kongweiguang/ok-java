@@ -364,9 +364,10 @@ public final class Res implements AutoCloseable {
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder()
+        .append('\n')
         .append("---ok-req---").append('\n')
-        .append("method: ").append(raw().request().method()).append(' ')
-        .append(raw().request().url()).append('\n')
+        .append("method: ").append(raw().request().method()).append('\n')
+        .append("url: ").append(raw().request().url()).append('\n')
         .append("headers: ").append('\n')
         .append(raw().request().headers()).append('\n')
         .append("body: ").append('\n');
