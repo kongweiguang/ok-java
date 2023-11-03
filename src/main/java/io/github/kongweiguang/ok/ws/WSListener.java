@@ -1,5 +1,7 @@
 package io.github.kongweiguang.ok.ws;
 
+import static java.util.Objects.nonNull;
+
 import io.github.kongweiguang.ok.Req;
 import io.github.kongweiguang.ok.Res;
 import okhttp3.Response;
@@ -65,7 +67,10 @@ public abstract class WSListener extends WebSocketListener {
    * @return {@link WSListener}
    */
   public WSListener send(final String text) {
-    ws.send(text);
+    if (nonNull(ws)) {
+      ws.send(text);
+    }
+
     return this;
   }
 
@@ -76,7 +81,10 @@ public abstract class WSListener extends WebSocketListener {
    * @return {@link WSListener}
    */
   public WSListener send(final byte[] bytes) {
-    ws.send(ByteString.of(bytes));
+    if (nonNull(ws)) {
+      ws.send(ByteString.of(bytes));
+    }
+
     return this;
   }
 

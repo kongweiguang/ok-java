@@ -168,12 +168,12 @@ public final class Req {
 
   //ws
   public static Req ws(final String url) {
-    return of(url).reqType(ReqType.ws);
+    return of().reqType(ReqType.ws).url(url);
   }
 
   //sse
   public static Req sse(final String url) {
-    return of(url).reqType(ReqType.sse);
+    return of().reqType(ReqType.sse).url(url);
   }
 
   /**
@@ -532,7 +532,7 @@ public final class Req {
     notNull(url, "url must not be null");
 
     try {
-      this.url = new URL(urlRegex(url.trim()));
+      this.url = new URL(urlRegex(url.trim(), ReqType.ws.equals(reqType())));
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }

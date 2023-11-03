@@ -1,5 +1,10 @@
 package io.github.kongweiguang.ok.core;
 
+import static io.github.kongweiguang.ok.core.Const._http;
+import static io.github.kongweiguang.ok.core.Const._https;
+import static io.github.kongweiguang.ok.core.Const._ws;
+import static io.github.kongweiguang.ok.core.Const._wss;
+import static io.github.kongweiguang.ok.core.Const.localhost;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -23,16 +28,35 @@ public final class Util {
   }
 
   //url校验
-  public static String urlRegex(String url) {
+  public static String urlRegex(String url, boolean isWs) {
     if (isNull(url) || Objects.equals("", url)) {
       url = "/";
     }
 
+    if (isWs) {
+      if (!isWs(url) && !isWss(url)) {
+        if (url.startsWith("/")) {
+          url = _http + localhost + url;
+        } else {
+          url = _http + url;
+        }
+      }
+      if (isWs(url)) {
+        url = url.replaceFirst(_ws, _http);
+      }
+
+      if (isWss(url)) {
+        url = url.replaceFirst(_wss, _https);
+
+      }
+      return url;
+    }
+
     if (!isHttp(url) && !isHttps(url)) {
       if (url.startsWith("/")) {
-        url = Const._http + Const.localhost + url;
+        url = _http + localhost + url;
       } else {
-        url = Const._http + url;
+        url = _http + url;
       }
     }
 
@@ -49,7 +73,7 @@ public final class Util {
 
   public static boolean isHttp(final String url) {
     if (nonNull(url)) {
-      return url.toLowerCase().startsWith(Const._http);
+      return url.toLowerCase().startsWith(_http);
     }
 
     return false;
@@ -57,16 +81,34 @@ public final class Util {
 
   public static boolean isHttps(final String url) {
     if (nonNull(url)) {
-      return url.toLowerCase().startsWith(Const._https);
+      return url.toLowerCase().startsWith(_https);
+    }
+
+    return false;
+  }
+
+  public static boolean isWs(final String url) {
+    if (nonNull(url)) {
+      return url.toLowerCase().startsWith(_ws);
+    }
+
+    return false;
+  }
+
+  public static boolean isWss(final String url) {
+    if (nonNull(url)) {
+      return url.toLowerCase().startsWith(_wss);
     }
 
     return false;
   }
 
   public static void sync(final Object obj) {
-    try {
-      obj.wait();
-    } catch (InterruptedException ignored) {
+    synchronized (obj) {
+      try {
+        obj.wait();
+      } catch (InterruptedException ignored) {
+      }
     }
   }
 
