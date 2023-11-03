@@ -17,8 +17,7 @@ public interface Const {
   String _ws = "ws://";
   String _wss = "wss://";
 
-
-  String localhost = "127.0.0.1";
+  String localhost = "localhost";
   int port = 80;
 
 }

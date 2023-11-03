@@ -102,6 +102,7 @@ public final class OK {
       return CompletableFuture.supplyAsync(this::execute, Config.exec())
           .handle((r, t) -> {
             if (handleRetry(max, duration, predicate, r, t)) {
+              async(false);
               return http0(max, duration, predicate).join();
             }
 

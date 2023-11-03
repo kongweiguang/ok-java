@@ -29,7 +29,7 @@ import okhttp3.OkHttpClient.Builder;
 public final class Config {
 
   //默认的客户端
-  private static final OkHttpClient default_client = new OkHttpClient.Builder()
+  private static final OkHttpClient defaultClient = new OkHttpClient.Builder()
       .connectTimeout(60, TimeUnit.SECONDS)
       .writeTimeout(60, TimeUnit.SECONDS)
       .readTimeout(60, TimeUnit.SECONDS)
@@ -54,7 +54,7 @@ public final class Config {
 
 
   public static OkHttpClient client() {
-    final OkHttpClient.Builder builder = Config.default_client.newBuilder();
+    final OkHttpClient.Builder builder = Config.defaultClient.newBuilder();
 
     if (nonNull(Config.interceptors)) {
       for (Interceptor interceptor : Config.interceptors) {
