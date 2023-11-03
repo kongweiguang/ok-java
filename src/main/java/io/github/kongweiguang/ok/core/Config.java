@@ -8,18 +8,21 @@ import static java.util.Objects.nonNull;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import okhttp3.Authenticator;
 import okhttp3.ConnectionPool;
 import okhttp3.Credentials;
+import okhttp3.Dispatcher;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.OkHttpClient.Builder;
@@ -31,16 +34,26 @@ import okhttp3.OkHttpClient.Builder;
  */
 public final class Config {
 
+  private static final Supplier<Dispatcher> disSup = () -> {
+    final Dispatcher dis = new Dispatcher();
+    dis.setMaxRequests(1 << 20);
+    dis.setMaxRequestsPerHost(1 << 20);
+    return dis;
+  };
+
   //默认的客户端
   private static final OkHttpClient client = new OkHttpClient.Builder()
-      .connectTimeout(60, TimeUnit.SECONDS)
-      .writeTimeout(60, TimeUnit.SECONDS)
-      .readTimeout(60, TimeUnit.SECONDS)
-      .addInterceptor(TimeoutInterceptor.of)
+      .dispatcher(disSup.get())
+      .connectTimeout(Duration.ofMinutes(1))
+      .writeTimeout(Duration.ofMinutes(1))
+      .readTimeout(Duration.ofMinutes(1))
       .build();
 
   //拦截器
   private static List<Interceptor> interceptors;
+
+  //分发器
+  private static Dispatcher dispatcher;
 
   //异步调用的线程池
   private static Executor exec;
@@ -55,19 +68,32 @@ public final class Config {
   //ssl配置
   private static boolean ssl;
 
-
   /**
    * 创建OkHttpClient
    *
    * @return OkHttpClient {@link OkHttpClient}
    */
   public static OkHttpClient client() {
+    return client(null);
+  }
+
+  /**
+   * 创建OkHttpClient
+   *
+   * @param timeout 超时时间
+   * @return OkHttpClient {@link OkHttpClient}
+   */
+  public static OkHttpClient client(final Timeout timeout) {
     final OkHttpClient.Builder builder = Config.client.newBuilder();
 
     if (nonNull(Config.interceptors)) {
       for (Interceptor interceptor : Config.interceptors) {
         builder.addInterceptor(interceptor);
       }
+    }
+
+    if (nonNull(Config.dispatcher)) {
+      builder.dispatcher(Config.dispatcher);
     }
 
     if (nonNull(Config.connectionPool)) {
@@ -86,8 +112,15 @@ public final class Config {
       ssl(builder);
     }
 
+    if (nonNull(timeout)) {
+      builder.connectTimeout(timeout.connect())
+          .writeTimeout(timeout.write())
+          .readTimeout(timeout.read());
+    }
+
     return builder.build();
   }
+
 
   /**
    * 构建ssl请求链接
@@ -189,6 +222,12 @@ public final class Config {
 
       Config.interceptors.add(interceptor);
     }
+  }
+
+  public static void dispatcher(final Dispatcher dispatcher) {
+    notNull(dispatcher, "dispatcher must not be null");
+
+    Config.dispatcher = dispatcher;
   }
 
   /**

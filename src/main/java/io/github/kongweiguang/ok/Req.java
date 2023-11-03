@@ -182,7 +182,7 @@ public final class Req {
    * @return Res {@link Res}
    */
   public Res ok() {
-    return ok(Config.client());
+    return ok(Config.client(timeout));
   }
 
   /**
@@ -201,7 +201,7 @@ public final class Req {
    * @return Res {@link Res}
    */
   public CompletableFuture<Res> okAsync() {
-    return okAsync(Config.client());
+    return okAsync(Config.client(timeout));
   }
 
   /**
@@ -361,32 +361,35 @@ public final class Req {
 
 
   /**
-   * 请求超时时间设置，单位秒
+   * 请求超时时间设置
    *
-   * @param timeoutSeconds 超时时间
+   * @param timeout 超时时间
    * @return Req {@link Req}
    */
-  public Req timeout(int timeoutSeconds) {
-    if (timeoutSeconds > 0) {
-      return timeout(timeoutSeconds, timeoutSeconds, timeoutSeconds);
+  public Req timeout(Duration timeout) {
+
+    if (nonNull(timeout)) {
+      return timeout(timeout, timeout, timeout);
     }
 
     return this;
   }
 
   /**
-   * 请求超时时间设置，单位秒
+   * 请求超时时间设置
    *
-   * @param connectTimeoutSeconds 连接超时时间
-   * @param writeTimeoutSeconds   写入超时时间
-   * @param readTimeoutSeconds    读取超时时间
+   * @param connect 连接超时时间
+   * @param write   写入超时时间
+   * @param read    读取超时时间
    * @return Req {@link Req}
    */
-  public Req timeout(int connectTimeoutSeconds, int writeTimeoutSeconds, int readTimeoutSeconds) {
-    if (connectTimeoutSeconds > 0) {
-      this.timeout = new Timeout(connectTimeoutSeconds, writeTimeoutSeconds, readTimeoutSeconds);
-      builder().tag(Timeout.class, timeout());
-    }
+  public Req timeout(Duration connect, Duration write, Duration read) {
+
+    notNull(connect, "connect must not be null");
+    notNull(write, "write must not be null");
+    notNull(read, "read must not be null");
+
+    this.timeout = new Timeout(connect, write, read);
 
     return this;
   }

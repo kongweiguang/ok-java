@@ -1,19 +1,33 @@
 package io.github.kongweiguang.ok.core;
 
+import java.time.Duration;
+
 /**
  * 设置请求超时
  *
- * @author kongweiguang，solon
+ * @author kongweiguang
  */
 public final class Timeout {
 
-  public final int connectTimeout;
-  public final int writeTimeout;
-  public final int readTimeout;
+  private final Duration connect;
+  private final Duration write;
+  private final Duration read;
 
-  public Timeout(int connectTimeout, int writeTimeout, int readTimeout) {
-    this.connectTimeout = connectTimeout;
-    this.writeTimeout = writeTimeout;
-    this.readTimeout = readTimeout;
+  public Timeout(Duration connect, Duration write, Duration read) {
+    this.connect = connect;
+    this.write = write;
+    this.read = read;
+  }
+
+  public Duration connect() {
+    return connect;
+  }
+
+  public Duration write() {
+    return write;
+  }
+
+  public Duration read() {
+    return read;
   }
 }
