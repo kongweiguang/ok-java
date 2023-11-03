@@ -1,6 +1,9 @@
 package io.github.kongweiguang.ok;
 
 
+import static io.github.kongweiguang.ok.core.Util.notNull;
+import static io.github.kongweiguang.ok.core.Util.removeFirstSlash;
+import static io.github.kongweiguang.ok.core.Util.urlRegex;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -12,7 +15,6 @@ import io.github.kongweiguang.ok.core.Method;
 import io.github.kongweiguang.ok.core.MultiValueMap;
 import io.github.kongweiguang.ok.core.ReqType;
 import io.github.kongweiguang.ok.core.Timeout;
-import io.github.kongweiguang.ok.core.Util;
 import io.github.kongweiguang.ok.sse.SSEListener;
 import io.github.kongweiguang.ok.ws.WSListener;
 import java.net.MalformedURLException;
@@ -23,7 +25,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -281,11 +282,15 @@ public final class Req {
   private void addQuery() {
     final HttpUrl.Builder ub = new HttpUrl.Builder();
 
-    if (isNull(scheme())) {
+    if (nonNull(scheme())) {
+      ub.scheme(scheme());
+    } else {
       ub.scheme(url().getProtocol());
     }
 
-    if (isNull(host())) {
+    if (nonNull(host())) {
+      ub.host(host());
+    } else {
       ub.host(url().getHost());
     }
 
@@ -294,30 +299,36 @@ public final class Req {
       if (p > 0) {
         ub.port(p);
       }
+    } else {
+      ub.port(port());
     }
 
     if (nonNull(url().getPath())) {
-      ub.addPathSegments(Util.removeFirstSlash(url().getPath()));
+      ub.addPathSegments(removeFirstSlash(url().getPath()));
     }
-
-    Optional.ofNullable(url().getQuery())
-        .map(e -> e.split("&"))
-        .ifPresent(qr -> {
-          for (String part : qr) {
-            String[] kv = part.split("=");
-            if (kv.length > 1) {
-              ub.addEncodedQueryParameter(kv[0], kv[1]);
-            }
-          }
-        });
-
-    Optional.ofNullable(queryMap)
-        .map(MultiValueMap::map)
-        .ifPresent(map -> map.forEach((k, v) ->
-            v.forEach(e -> ub.addEncodedQueryParameter(k, e))));
 
     if (nonNull(paths)) {
       paths().forEach(ub::addPathSegments);
+    }
+
+    final String query = url().getQuery();
+    if (nonNull(query)) {
+
+      for (final String part : query.split("&")) {
+        String[] kv = part.split("=");
+
+        if (kv.length > 1) {
+          ub.addEncodedQueryParameter(kv[0], kv[1]);
+        }
+      }
+
+    }
+
+    if (nonNull(queryMap)) {
+      query().map()
+          .forEach((k, v) ->
+              v.forEach(e -> ub.addEncodedQueryParameter(k, e))
+          );
     }
 
     builder().url(ub.build());
@@ -515,8 +526,10 @@ public final class Req {
    * @return Req {@link Req}
    */
   public Req url(final String url) {
+    notNull(url, "url must not be null");
+
     try {
-      this.url = new URL(Util.urlRegex(url));
+      this.url = new URL(urlRegex(url.trim()));
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
@@ -565,7 +578,7 @@ public final class Req {
    */
   public Req path(final String path) {
     if (nonNull(path)) {
-      paths().add(Util.removeFirstSlash(path));
+      paths().add(removeFirstSlash(path));
     }
 
     return this;
