@@ -1,12 +1,11 @@
 package io.github.kongweiguang.ok;
 
-import io.github.kongweiguang.ok.core.Config;
 import io.github.kongweiguang.ok.core.UA.Win;
 
 public class DemoTest {
 
     public static void main(String[] args) {
-        Config.ssl(true);
+//        Config.ssl(true);
         final Res ok = Req.post("https://open.feishu.cn/open-apis/bot/v2/hook/409771ec-d1cf-4dba-8c98-2b64eee8328f")
                 .header("k", "v")
                 .header("q", "wer")

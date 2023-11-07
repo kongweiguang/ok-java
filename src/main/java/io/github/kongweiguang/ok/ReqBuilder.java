@@ -84,7 +84,7 @@ public final class ReqBuilder {
     /**
      * 请求的类型
      *
-     * @param typeEnum 请求类型 {@link ReqType}
+     * @param reqType 请求类型 {@link ReqType}
      * @return Res {@link ReqBuilder}
      */
     public ReqBuilder reqType(final ReqType reqType) {
@@ -154,15 +154,12 @@ public final class ReqBuilder {
      * 请求前初始化
      */
     void before() {
-        //method
-        builder().method(method().name(), addBody());
-
-        //url
-        builder().url(urlBuilder().build());
+        //method url
+        builder().method(method().name(), addBody()).url(urlBuilder().build());
 
         //cookie
         if (nonNull(cookieMap)) {
-            builder().addHeader(cookie.v(), cookie2Str(cookie()));
+            header(cookie.v(), cookie2Str(cookie()));
         }
 
         //tag
@@ -283,7 +280,7 @@ public final class ReqBuilder {
      */
     public ReqBuilder header(final String name, final String value) {
         if (nonNull(name) && nonNull(value)) {
-            builder.header(name, value);
+            builder().header(name, value);
         }
 
         return this;
@@ -389,7 +386,7 @@ public final class ReqBuilder {
     }
 
     /**
-     * 设置url
+     * 设置url，默认请求根目录 <a href="http://localhost/">http://localhost/</a>
      *
      * @param url url
      * @return Req {@link ReqBuilder}

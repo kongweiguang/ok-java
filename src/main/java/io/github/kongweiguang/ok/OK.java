@@ -29,7 +29,6 @@ public final class OK {
     private OK(final ReqBuilder reqBuilder, final OkHttpClient client) {
         this.client = client;
         reqBuilder.before();
-
         this.request = reqBuilder.builder().build();
         reqBuilder(reqBuilder).retry(reqBuilder.max() > 0);
     }
@@ -39,7 +38,8 @@ public final class OK {
      * <p>
      * 只有http请求有返回值，ws和sse没有返回值
      *
-     * @param req 请求参数 {@link Req}
+     * @param reqBuilder 请求参数 {@link Req}
+     * @param client     OkHttpClient {@link OkHttpClient}
      * @return Res {@link Res}
      */
     public static Res ok(final ReqBuilder reqBuilder, final OkHttpClient client) {
@@ -50,7 +50,8 @@ public final class OK {
      * <h2>异步调用发送请求</h2>
      * 只有http请求有返回值，ws和sse没有返回值
      *
-     * @param req 请求参数 {@link Req}
+     * @param reqBuilder 请求参数 {@link Req}
+     * @param client     OkHttpClient {@link OkHttpClient}
      * @return Res {@link Res}
      */
     public static CompletableFuture<Res> okAsync(final ReqBuilder reqBuilder, final OkHttpClient client) {
