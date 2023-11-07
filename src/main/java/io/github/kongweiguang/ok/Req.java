@@ -63,6 +63,7 @@ public final class Req {
   private int port = -1;
   private LinkedList<String> paths;
   private MultiValueMap<String, String> queryMap;
+  private String fragment;
 
   //body
   private String strBody;
@@ -325,10 +326,17 @@ public final class Req {
     }
 
     if (nonNull(queryMap)) {
-      query().map()
+      query()
+          .map()
           .forEach((k, v) ->
               v.forEach(e -> ub.addEncodedQueryParameter(k, e))
           );
+    }
+
+    if (nonNull(fragment)) {
+      ub.encodedFragment(fragment);
+    } else {
+      ub.encodedFragment(url().getRef());
     }
 
     builder().url(ub.build());
@@ -634,6 +642,20 @@ public final class Req {
   }
 
   /**
+   * 设置url的fragment
+   *
+   * @param fragment #号后面的内容
+   * @return Req {@link Req}
+   */
+  public Req fragment(final String fragment) {
+    if (nonNull(fragment)) {
+      this.fragment = fragment;
+    }
+
+    return this;
+  }
+
+  /**
    * 添加上传文件，只有multipart方式才可以
    *
    * @param name     名称
@@ -848,6 +870,10 @@ public final class Req {
     }
 
     return paths;
+  }
+
+  public String fragment() {
+    return fragment;
   }
 
   public URL url() {
