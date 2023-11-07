@@ -17,7 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import kotlin.Pair;
@@ -95,7 +95,7 @@ public final class Res implements AutoCloseable {
   public Map<String, List<String>> headers() {
     final Headers headers = raw().headers();
 
-    final Map<String, List<String>> fr = new LinkedHashMap<>(headers.size(), 1);
+    final Map<String, List<String>> fr = new HashMap<>(headers.size(), 1);
 
     for (final Pair<? extends String, ? extends String> hd : headers) {
       fr.computeIfAbsent(hd.getFirst(), k -> new ArrayList<>()).add(hd.getSecond());
