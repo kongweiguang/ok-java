@@ -3,9 +3,9 @@ package io.github.kongweiguang.ok;
 
 import static io.github.kongweiguang.ok.core.Util.cookie2Str;
 import static io.github.kongweiguang.ok.core.Util.encode;
+import static io.github.kongweiguang.ok.core.Util.fixUrl;
 import static io.github.kongweiguang.ok.core.Util.notNull;
 import static io.github.kongweiguang.ok.core.Util.removeFirstSlash;
-import static io.github.kongweiguang.ok.core.Util.fixUrl;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -82,7 +82,7 @@ public final class ReqBuilder {
   //attachment
   private Map<Object, Object> attachment;
 
-  public ReqBuilder() {
+  ReqBuilder() {
     this.charset = StandardCharsets.UTF_8;
     this.method = Method.GET;
     this.reqType = ReqType.http;
