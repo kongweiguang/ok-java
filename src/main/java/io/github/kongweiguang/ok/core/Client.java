@@ -14,6 +14,8 @@ import okhttp3.OkHttpClient.Builder;
 
 /**
  * 请求客户端
+ *
+ * @author kongweiguang
  */
 public final class Client {
 
