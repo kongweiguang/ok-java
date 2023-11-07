@@ -2,9 +2,10 @@ package io.github.kongweiguang.ok;
 
 
 import static io.github.kongweiguang.ok.core.Util.cookie2Str;
+import static io.github.kongweiguang.ok.core.Util.encode;
 import static io.github.kongweiguang.ok.core.Util.notNull;
 import static io.github.kongweiguang.ok.core.Util.removeFirstSlash;
-import static io.github.kongweiguang.ok.core.Util.urlRegex;
+import static io.github.kongweiguang.ok.core.Util.fixUrl;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -385,6 +386,17 @@ public final class ReqBuilder {
   }
 
   /**
+   * 设置basic类型的authorization
+   *
+   * @param username 用户名
+   * @param password 密码
+   * @return Req {@link ReqBuilder}
+   */
+  public ReqBuilder basic(final String username, final String password) {
+    return auth("Basic " + encode(username + ":" + password));
+  }
+
+  /**
    * 设置url
    *
    * @param url url
@@ -394,7 +406,7 @@ public final class ReqBuilder {
     notNull(url, "url must not be null");
 
     this.urlBuilder =
-        HttpUrl.parse(urlRegex(url.trim(), ReqType.ws.equals(reqType())))
+        HttpUrl.parse(fixUrl(url.trim(), ReqType.ws.equals(reqType())))
             .newBuilder();
 
     return this;

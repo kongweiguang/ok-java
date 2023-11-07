@@ -8,13 +8,17 @@ import static io.github.kongweiguang.ok.core.Const.localhost;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
+import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * ok-java内部使用工具
+ */
 public final class Util {
 
   private Util() {
-    throw new RuntimeException();
+    throw new RuntimeException("util not be constructor");
   }
 
   //移除第一个斜杠
@@ -30,7 +34,7 @@ public final class Util {
   }
 
   //url校验
-  public static String urlRegex(String url, boolean isWs) {
+  public static String fixUrl(String url, boolean isWs) {
     if (isNull(url) || Objects.equals("", url)) {
       url = "/";
     }
@@ -128,12 +132,16 @@ public final class Util {
 
 
   //cookie转字符串
-  public static String cookie2Str(Map<String, String> cookies) {
+  public static String cookie2Str(final Map<String, String> cookies) {
     StringBuilder sb = new StringBuilder();
 
     cookies.forEach((k, v) -> sb.append(k).append('=').append(v).append("; "));
 
     return sb.toString();
+  }
+
+  public static String encode(final String str) {
+    return Base64.getEncoder().encodeToString(str.getBytes());
   }
 
 }

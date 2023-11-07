@@ -1,5 +1,6 @@
 package io.github.kongweiguang.ok;
 
+import java.util.Base64;
 import okhttp3.HttpUrl;
 import okhttp3.HttpUrl.Builder;
 
@@ -20,9 +21,6 @@ public class DemoTest {
 //    System.out.println(123);
 //    final HttpUrl parse = HttpUrl.parse("http://www.baidu.com");
 //    System.out.println("parse = " + parse.host());
-    final Builder builder = new Builder();
-    builder.addPathSegments("get");
-    System.out.println("builder.build() = " + builder.build());
   }
 
 }
