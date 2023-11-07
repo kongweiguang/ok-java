@@ -9,25 +9,25 @@ import java.time.Duration;
  */
 public final class Timeout {
 
-  private final Duration connect;
-  private final Duration write;
-  private final Duration read;
+    private final Duration connect;
+    private final Duration write;
+    private final Duration read;
 
-  public Timeout(Duration connect, Duration write, Duration read) {
-    this.connect = connect;
-    this.write = write;
-    this.read = read;
-  }
+    public Timeout(Duration connect, Duration write, Duration read) {
+        this.connect = connect;
+        this.write = write;
+        this.read = read;
+    }
 
-  public Duration connect() {
-    return connect;
-  }
+    public Duration connect() {
+        return connect;
+    }
 
-  public Duration write() {
-    return write;
-  }
+    public Duration write() {
+        return write;
+    }
 
-  public Duration read() {
-    return read;
-  }
+    public Duration read() {
+        return read;
+    }
 }
