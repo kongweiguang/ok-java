@@ -9,8 +9,13 @@ import okhttp3.*;
 import okhttp3.Request.Builder;
 import okhttp3.internal.http.HttpMethod;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -82,8 +87,8 @@ public final class ReqBuilder {
      * @param typeEnum 请求类型 {@link ReqType}
      * @return Res {@link ReqBuilder}
      */
-    public ReqBuilder reqType(final ReqType typeEnum) {
-        this.reqType = typeEnum;
+    public ReqBuilder reqType(final ReqType reqType) {
+        this.reqType = reqType;
         return this;
     }
 
@@ -512,7 +517,7 @@ public final class ReqBuilder {
      * @param bytes    文件内容
      * @return Req {@link ReqBuilder}
      */
-    public ReqBuilder file(String name, String fileName, byte[] bytes) {
+    public ReqBuilder file(final String name, final String fileName, final byte[] bytes) {
         if (isMul()) {
             mul().addFormDataPart(
                     name,
@@ -522,6 +527,53 @@ public final class ReqBuilder {
         }
 
         return this;
+    }
+
+    /**
+     * 添加上传文件，只有multipart方式才可以
+     *
+     * @param name     名称
+     * @param fileName 文件名
+     * @param path     文件路径
+     * @return Req {@link ReqBuilder}
+     */
+    public ReqBuilder file(final String name, final String fileName, final Path path) {
+        try {
+            return file(name, fileName, Files.readAllBytes(path));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 添加上传文件，只有multipart方式才可以
+     *
+     * @param name     名称
+     * @param fileName 文件名
+     * @param path     文件路径
+     * @return Req {@link ReqBuilder}
+     */
+    public ReqBuilder file(final String name, final String fileName, final String path) {
+        try {
+            return file(name, fileName, Files.readAllBytes(Paths.get(path)));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 添加上传文件，只有multipart方式才可以
+     *
+     * @param name 名称
+     * @param file 上传文件
+     * @return Req {@link ReqBuilder}
+     */
+    public ReqBuilder file(final String name, final File file) {
+        try {
+            return file(name, file.getName(), Files.readAllBytes(file.toPath()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
