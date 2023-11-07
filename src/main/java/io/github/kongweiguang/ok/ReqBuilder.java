@@ -1,6 +1,7 @@
 package io.github.kongweiguang.ok;
 
 
+import static io.github.kongweiguang.ok.core.ReqType.ws;
 import static io.github.kongweiguang.ok.core.Util.cookie2Str;
 import static io.github.kongweiguang.ok.core.Util.encode;
 import static io.github.kongweiguang.ok.core.Util.fixUrl;
@@ -406,7 +407,7 @@ public final class ReqBuilder {
     notNull(url, "url must not be null");
 
     this.urlBuilder =
-        HttpUrl.parse(fixUrl(url.trim(), ReqType.ws.equals(reqType())))
+        HttpUrl.parse(fixUrl(url.trim(), ws.equals(reqType())))
             .newBuilder();
 
     return this;
