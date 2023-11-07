@@ -8,11 +8,13 @@ import static io.github.kongweiguang.ok.core.Const.localhost;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
+import java.util.Map;
 import java.util.Objects;
 
 public final class Util {
 
   private Util() {
+    throw new RuntimeException();
   }
 
   //移除第一个斜杠
@@ -122,6 +124,16 @@ public final class Util {
     if (!bool) {
       throw new IllegalArgumentException(msg);
     }
+  }
+
+
+  //cookie转字符串
+  public static String cookie2Str(Map<String, String> cookies) {
+    StringBuilder sb = new StringBuilder();
+
+    cookies.forEach((k, v) -> sb.append(k).append('=').append(v).append("; "));
+
+    return sb.toString();
   }
 
 }

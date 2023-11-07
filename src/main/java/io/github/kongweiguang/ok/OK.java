@@ -21,11 +21,11 @@ public final class OK {
 
   private final OkHttpClient client;
   private final Request request;
-  private Req req;
+  private ReqBuilder req;
   private boolean async;
   private boolean retry;
 
-  private OK(final Req req, final OkHttpClient client) {
+  private OK(final ReqBuilder req, final OkHttpClient client) {
     this.client = client;
     req.bf();
 
@@ -41,7 +41,7 @@ public final class OK {
    * @param req 请求参数 {@link Req}
    * @return Res {@link Res}
    */
-  public static Res ok(final Req req, final OkHttpClient client) {
+  public static Res ok(final ReqBuilder req, final OkHttpClient client) {
     return new OK(req, client).ojbk().join();
   }
 
@@ -52,7 +52,7 @@ public final class OK {
    * @param req 请求参数 {@link Req}
    * @return Res {@link Res}
    */
-  public static CompletableFuture<Res> okAsync(final Req req, final OkHttpClient client) {
+  public static CompletableFuture<Res> okAsync(final ReqBuilder req, final OkHttpClient client) {
     return new OK(req, client).async(true).ojbk();
   }
 
@@ -179,7 +179,7 @@ public final class OK {
   }
 
 
-  private OK req(final Req req) {
+  private OK req(final ReqBuilder req) {
     this.req = req;
     return this;
   }
@@ -203,7 +203,7 @@ public final class OK {
     return request;
   }
 
-  public Req req() {
+  public ReqBuilder req() {
     return req;
   }
 

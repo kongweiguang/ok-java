@@ -371,7 +371,7 @@ public final class Res implements AutoCloseable {
         .append("headers: ").append('\n')
         .append(raw().request().headers()).append('\n')
         .append("body: ").append('\n');
-    Object body = raw().request().tag(Req.class).strBody();
+    Object body = raw().request().tag(ReqBuilder.class).strBody();
 
     if (isNull(body)) {
       body = raw().request().body();
