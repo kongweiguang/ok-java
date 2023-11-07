@@ -336,7 +336,7 @@ public final class ReqBuilder {
     if (nonNull(contentType)) {
       this.contentType = contentType.v();
 
-      header(Header.content_type.v(), String.join(";charset=", contentType(), charset().name()));
+      header(Header.content_type.v(), contentType() + ";charset=" + charset().name());
     }
 
     return this;
@@ -591,13 +591,13 @@ public final class ReqBuilder {
   /**
    * 自定义设置json对象
    *
-   * @param str         内容
+   * @param body        内容
    * @param contentType 类型 {@link ContentType}
    * @return Req {@link ReqBuilder}
    */
-  public ReqBuilder body(final String str, final ContentType contentType) {
+  public ReqBuilder body(final String body, final ContentType contentType) {
     contentType(contentType);
-    this.strBody = str;
+    this.strBody = body;
     return this;
   }
 
